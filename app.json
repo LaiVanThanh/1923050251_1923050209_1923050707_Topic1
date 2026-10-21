@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Study Planner DNTU",
+    "slug": "study-planner-topic1",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "studyplanner",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "vn.edu.dntu.studyplanner"
+    },
+    "android": {
+      "package": "vn.edu.dntu.studyplanner"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép Study Planner truy cập thư viện ảnh để đính kèm ảnh chụp ghi chú viết tay hoặc bảng trắng.",
+          "cameraPermission": "Cho phép Study Planner sử dụng Camera để chụp ảnh bảng trắng và ghi chú bài tập."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
