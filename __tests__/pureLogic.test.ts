@@ -79,4 +79,87 @@ describe('Test 1 (Pure-Logic): Bộ Xử Lý Múi Giờ & Thống Kê Tiến Đ�
     });
   });
 
+  describe('Bước 3.4: computeCourseProgress (Computed, Never Stored)', () => {
+    const sampleCourses: Course[] = [
+      {
+        id: 'course-mobile',
+        code: 'TH7011101',
+        name: 'Lập trình Mobile',
+        colour: 'blue',
+      },
+      {
+        id: 'course-sad',
+        code: 'TH7011205',
+        name: 'Phân tích Thiết kế HTTT',
+        colour: 'indigo',
+      },
+    ];
+
+    it('tính toán chính xác completed, outstanding, percentage và cập nhật ngay khi thêm hoặc hoàn thành bài tập', () => {
+      const initialAssignments: Assignment[] = [
+        {
+          id: 'a1',
+          courseId: 'course-mobile',
+          title: 'Module 1: Theme & Timezone',
+          dueAt: new Date(2026, 9, 27, 10, 0).toISOString(),
+          status: 'completed',
+        },
+        {
+          id: 'a2',
+          courseId: 'course-mobile',
+          title: 'Module 2: SecureStore Auth',
+          dueAt: new Date(2026, 9, 28, 10, 0).toISOString(),
+          status: 'pending',
+        },
+      ];
+
+      // Lần tính 1: 1 completed, 1 outstanding -> 50%
+      const progressStep1 = computeCourseProgress(sampleCourses, initialAssignments);
+      const mobileStep1 = progressStep1.find((p) => p.courseId === 'course-mobile');
+      const sadStep1 = progressStep1.find((p) => p.courseId === 'course-sad');
+
+      expect(mobileStep1).toEqual({
+        courseId: 'course-mobile',
+        courseCode: 'TH7011101',
+        courseName: 'Lập trình Mobile',
+        colour: 'blue',
+        completed: 1,
+        outstanding: 1,
+        total: 2,
+        percentage: 50,
+      });
+      expect(sadStep1?.total).toBe(0);
+      expect(sadStep1?.percentage).toBe(0);
+
+      // Lần tính 2: Thêm 1 bài tập mới vào course-mobile -> 1/3 = 33%
+      const afterAddingAssignment: Assignment[] = [
+        ...initialAssignments,
+        {
+          id: 'a3',
+          courseId: 'course-mobile',
+          title: 'Module 5: Offline & Optimistic Rollback',
+          dueAt: new Date(2026, 9, 29, 10, 0).toISOString(),
+          status: 'pending',
+        },
+      ];
+      const mobileStep2 = computeCourseProgress(sampleCourses, afterAddingAssignment).find(
+        (p) => p.courseId === 'course-mobile'
+      );
+      expect(mobileStep2?.completed).toBe(1);
+      expect(mobileStep2?.outstanding).toBe(2);
+      expect(mobileStep2?.percentage).toBe(33);
+
+      // Lần tính 3: Đánh dấu bài tập a2 và a3 sang 'completed' -> 3/3 = 100%
+      const afterCompletingAll = afterAddingAssignment.map((a) => ({
+        ...a,
+        status: 'completed' as const,
+      }));
+      const mobileStep3 = computeCourseProgress(sampleCourses, afterCompletingAll).find(
+        (p) => p.courseId === 'course-mobile'
+      );
+      expect(mobileStep3?.completed).toBe(3);
+      expect(mobileStep3?.outstanding).toBe(0);
+      expect(mobileStep3?.percentage).toBe(100);
+    });
+  });
 });
