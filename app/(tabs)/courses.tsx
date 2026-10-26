@@ -397,13 +397,13 @@ export default function CoursesAndProgressScreen() {
           HỒ SƠ SINH VIÊN & BẢO MẬT PHIÊN (EXPO SECURESTORE)
         </Text>
         <Text style={[typography.title3, { color: colors.textPrimary, marginTop: 4 }]}>
-          {currentUser?.name ?? 'Sinh viên DNTU'}
+          {currentUser?.name ?? 'Nguyễn Văn A'}
         </Text>
         <Text style={[typography.subheadline, { color: colors.textSecondary, marginTop: 2 }]}>
-          {currentUser?.email ?? '1923050251@dntu.edu.vn'}
+          {currentUser?.email ?? 'sinhvien01@example.edu.vn'}
         </Text>
         <Text style={[typography.caption, { color: colors.textTertiary, marginTop: 2 }]}>
-          {currentUser?.faculty ?? 'Trường ĐH Công Nghệ Đồng Nai • Học phần TH7011101'}
+          {currentUser?.faculty ?? 'Khoa Công nghệ Thông tin'}
         </Text>
 
         {/* Bộ chọn chế độ màu Light / Dark / System từ 1 file tokens.ts */}
@@ -419,7 +419,7 @@ export default function CoursesAndProgressScreen() {
           {(['light', 'dark', 'system'] as const).map((mode) => {
             const active = preference === mode;
             const label =
-              mode === 'light' ? '☀️ Sáng' : mode === 'dark' ? '🌙 Tối' : '⚙️ Hệ thống';
+              mode === 'light' ? 'Sáng' : mode === 'dark' ? 'Tối' : 'Hệ thống';
             return (
               <Pressable
                 key={mode}
@@ -463,8 +463,8 @@ export default function CoursesAndProgressScreen() {
             testID="toggle-offline-mode-btn"
             label={
               simulatedOffline
-                ? '📡 Đang bật Offline Mode (Bấm để Online)'
-                : '✈️ Bật giả lập Offline Mode (Mất mạng)'
+                ? 'Đang bật chế độ Offline (Bấm để Online)'
+                : 'Bật giả lập Offline Mode (Mất mạng)'
             }
             variant={simulatedOffline ? 'outline' : 'secondary'}
             onPress={handleToggleOfflineSimulation}
@@ -473,8 +473,8 @@ export default function CoursesAndProgressScreen() {
             testID="toggle-server-500-btn"
             label={
               simulateServerError500
-                ? '🔥 Đang bật Giả lập Lỗi 500 (Sẵn sàng test Rollback)'
-                : '🧪 Bật giả lập Lỗi Server 500 (Test Optimistic Rollback)'
+                ? 'Đang bật Giả lập Lỗi 500 (Test Rollback)'
+                : 'Bật giả lập Lỗi Server 500 (Test Rollback)'
             }
             variant={simulateServerError500 ? 'danger' : 'secondary'}
             onPress={() => setSimulateServerError500(!simulateServerError500)}

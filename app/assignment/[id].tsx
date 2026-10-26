@@ -492,19 +492,19 @@ export default function AssignmentDetailScreen() {
               <View style={styles.buttonStack}>
                 <AccessibleButton
                   testID="pick-library-photo-btn"
-                  label="🖼️ Chọn ảnh từ Thư viện (Image Picker)"
+                  label="Chọn ảnh từ Thư viện"
                   variant="outline"
                   onPress={handlePickImageFromLibrary}
                 />
                 <AccessibleButton
                   testID="take-camera-photo-btn"
-                  label="📸 Chụp ảnh Bảng trắng / Vở ghi"
+                  label="Chụp ảnh Bảng trắng / Vở ghi"
                   variant="secondary"
                   onPress={handleTakePhotoFromCamera}
                 />
                 <AccessibleButton
                   testID="attach-sample-photo-btn"
-                  label="✨ Gắn nhanh Ảnh Bảng trắng Mẫu (Dành cho Máy ảo)"
+                  label="Gắn ảnh Bảng trắng mẫu (Máy ảo)"
                   variant="secondary"
                   onPress={handleAttachSampleWhiteboard}
                 />
@@ -539,7 +539,7 @@ export default function AssignmentDetailScreen() {
               ]}
             >
               <Text style={[typography.headline, { color: colors.textPrimary }]}>
-                🔔 Nhắc hạn Thông báo Cục bộ & Deep Link
+                Nhắc hạn Thông báo Cục bộ & Deep Link
               </Text>
               <Text
                 style={[
@@ -554,14 +554,14 @@ export default function AssignmentDetailScreen() {
               <View style={styles.buttonStack}>
                 <AccessibleButton
                   testID="demo-notification-5s-btn"
-                  label="⏰ Gửi thông báo nhắc thử sau 5 giây (Demo Bảo vệ)"
+                  label="Gửi thông báo nhắc thử sau 5 giây"
                   accessibilityLabel="Gửi thông báo nhắc thử sau 5 giây"
                   variant="primary"
                   onPress={handleDemoReminder5Seconds}
                 />
                 <AccessibleButton
                   testID="schedule-deadline-notif-btn"
-                  label="📅 Đặt lịch nhắc tự động theo hạn nộp"
+                  label="Đặt lịch nhắc tự động theo hạn nộp"
                   variant="secondary"
                   onPress={handleScheduleDeadlineReminder}
                 />
@@ -586,7 +586,7 @@ export default function AssignmentDetailScreen() {
             <View style={styles.footerActionsRow}>
               <AccessibleButton
                 testID="edit-assignment-modal-btn"
-                label="✏️ Chỉnh sửa Bài tập"
+                label="Chỉnh sửa Bài tập"
                 variant="outline"
                 onPress={() =>
                   router.push({
@@ -598,7 +598,7 @@ export default function AssignmentDetailScreen() {
               />
               <AccessibleButton
                 testID="delete-assignment-btn"
-                label="🗑️ Xóa Bài tập"
+                label="Xóa Bài tập"
                 variant="danger"
                 onPress={handleDeleteAssignment}
                 style={styles.flexOne}

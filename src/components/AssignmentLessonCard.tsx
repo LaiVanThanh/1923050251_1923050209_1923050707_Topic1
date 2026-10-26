@@ -193,7 +193,7 @@ export const AssignmentLessonCard: React.FC<AssignmentLessonCardProps> = ({
                   },
                 ]}
               >
-                <Text style={[typography.caption, { color: colors.primary }]}>📷 Ảnh ghi chú</Text>
+                <Text style={[typography.caption, { color: colors.primary }]}>Ảnh đính kèm</Text>
               </View>
             )}
           </View>

@@ -32,19 +32,19 @@ import { MIN_TOUCH_TARGET, useAppTheme } from '../../src/theme/tokens';
 
 const QUICK_ACCOUNTS = [
   {
-    code: '1923050251',
-    name: 'Lại Văn Thành',
-    email: '1923050251@dntu.edu.vn',
+    code: 'SV001',
+    name: 'Nguyễn Văn A',
+    email: 'sinhvien01@example.edu.vn',
   },
   {
-    code: '1923050209',
-    name: 'Nguyễn Lê Minh Thành',
-    email: '1923050209@dntu.edu.vn',
+    code: 'SV002',
+    name: 'Trần Thị B',
+    email: 'sinhvien02@example.edu.vn',
   },
   {
-    code: '1923050707',
-    name: 'Mai Hoàng Tuấn',
-    email: '1923050707@dntu.edu.vn',
+    code: 'SV003',
+    name: 'Lê Văn C',
+    email: 'sinhvien03@example.edu.vn',
   },
 ];
 
@@ -57,9 +57,9 @@ export default function SignInScreen() {
   const isSubmitting = useAuthSubmitting();
   const authError = useAuthError();
 
-  const [email, setEmail] = useState('1923050251@dntu.edu.vn');
-  const [password, setPassword] = useState('dntu2026');
-  const [studentName, setStudentName] = useState('Lại Văn Thành (1923050251)');
+  const [email, setEmail] = useState('sinhvien01@example.edu.vn');
+  const [password, setPassword] = useState('123456');
+  const [studentName, setStudentName] = useState('Nguyễn Văn A (SV001)');
   const [showEmptyGuide, setShowEmptyGuide] = useState(false);
 
   const handleSignIn = async () => {
@@ -98,7 +98,7 @@ export default function SignInScreen() {
               ]}
             >
               <Text style={[typography.captionSemibold, { color: colors.primary }]}>
-                🎓 DNTU • 23DTH1 • Topic 01
+                Cổng thông tin sinh viên
               </Text>
             </View>
 
@@ -118,7 +118,7 @@ export default function SignInScreen() {
               ]}
             >
               <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
-                {isDark ? '☀️ Light' : '🌙 Dark'}
+                {isDark ? 'Light' : 'Dark'}
               </Text>
             </Pressable>
           </View>
@@ -149,17 +149,17 @@ export default function SignInScreen() {
             onRetry={() => {
               clearAuthError();
               if (password === 'error500') {
-                setPassword('dntu2026');
+                setPassword('123456');
               }
             }}
             isEmpty={showEmptyGuide}
             emptyTitle="Chưa có thông tin tài khoản"
             emptyMessage="Chọn một trong 3 mã số sinh viên của nhóm để tự động điền thông tin đăng nhập mẫu."
-            emptyActionLabel="Điền tài khoản 1923050251"
+            emptyActionLabel="Điền tài khoản mẫu"
             onEmptyAction={() => {
-              setEmail('1923050251@dntu.edu.vn');
-              setPassword('dntu2026');
-              setStudentName('Lại Văn Thành (1923050251)');
+              setEmail('sinhvien01@example.edu.vn');
+              setPassword('123456');
+              setStudentName('Nguyễn Văn A (SV001)');
               setShowEmptyGuide(false);
             }}
           >
@@ -171,7 +171,7 @@ export default function SignInScreen() {
                   { color: colors.textSecondary, marginBottom: spacing.sm },
                 ]}
               >
-                CHỌN NHANH THÀNH VIÊN NHÓM:
+                CHỌN NHANH TÀI KHOẢN MẪU:
               </Text>
               <View style={styles.quickAccountsRow}>
                 {QUICK_ACCOUNTS.map((acc) => {
@@ -185,7 +185,7 @@ export default function SignInScreen() {
                       onPress={() => {
                         clearAuthError();
                         setEmail(acc.email);
-                        setPassword('dntu2026');
+                        setPassword('123456');
                         setStudentName(`${acc.name} (${acc.code})`);
                       }}
                       style={[
@@ -236,7 +236,7 @@ export default function SignInScreen() {
                 }}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                placeholder="mssv@dntu.edu.vn"
+                placeholder="sinhvien@example.edu.vn"
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,

@@ -39,26 +39,26 @@ interface AuthStoreState {
 }
 
 const DEMO_USERS: Record<string, User> = {
-  '1923050251@dntu.edu.vn': {
-    id: 'usr-1923050251',
-    name: 'Lại Văn Thành (1923050251)',
-    email: '1923050251@dntu.edu.vn',
-    studentCode: '1923050251',
-    faculty: 'Công nghệ Thông tin - 23DTH1',
+  'sinhvien01@example.edu.vn': {
+    id: 'usr-sv-01',
+    name: 'Nguyễn Văn A',
+    email: 'sinhvien01@example.edu.vn',
+    studentCode: 'SV001',
+    faculty: 'Khoa Công nghệ Thông tin',
   },
-  '1923050209@dntu.edu.vn': {
-    id: 'usr-1923050209',
-    name: 'Nguyễn Lê Minh Thành (1923050209)',
-    email: '1923050209@dntu.edu.vn',
-    studentCode: '1923050209',
-    faculty: 'Công nghệ Thông tin - 23DTH1',
+  'sinhvien02@example.edu.vn': {
+    id: 'usr-sv-02',
+    name: 'Trần Thị B',
+    email: 'sinhvien02@example.edu.vn',
+    studentCode: 'SV002',
+    faculty: 'Khoa Ngoại ngữ',
   },
-  '1923050707@dntu.edu.vn': {
-    id: 'usr-1923050707',
-    name: 'Mai Hoàng Tuấn (1923050707)',
-    email: '1923050707@dntu.edu.vn',
-    studentCode: '1923050707',
-    faculty: 'Công nghệ Thông tin - 23DTH1',
+  'sinhvien03@example.edu.vn': {
+    id: 'usr-sv-03',
+    name: 'Lê Văn C',
+    email: 'sinhvien03@example.edu.vn',
+    studentCode: 'SV003',
+    faculty: 'Khoa Kinh tế',
   },
 };
 
@@ -109,7 +109,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     if (!emailRegex.test(normalizedEmail)) {
       set({
         isSubmitting: false,
-        errorMessage: 'Email sinh viên không đúng định dạng (ví dụ: 1923050251@dntu.edu.vn).',
+        errorMessage: 'Email sinh viên không đúng định dạng (ví dụ: sinhvien01@example.edu.vn).',
       });
       return false;
     }
@@ -136,10 +136,10 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
         id: `usr-${normalizedEmail.split('@')[0]}`,
         name:
           studentName?.trim() ||
-          `Sinh viên DNTU (${normalizedEmail.split('@')[0].toUpperCase()})`,
+          `Sinh viên (${normalizedEmail.split('@')[0].toUpperCase()})`,
         email: normalizedEmail,
         studentCode: normalizedEmail.split('@')[0],
-        faculty: 'Trường ĐH Công Nghệ Đồng Nai (23DTH1)',
+        faculty: 'Khoa Công nghệ Thông tin',
       };
 
       const session: AuthSession = {

@@ -192,7 +192,7 @@ export default function HomePlannerScreen() {
                 },
               ]}
             >
-              📆 Weekly View
+              Weekly View
             </Text>
           </Pressable>
 
@@ -219,7 +219,7 @@ export default function HomePlannerScreen() {
                 },
               ]}
             >
-              📋 List View
+              List View
             </Text>
           </Pressable>
         </View>
@@ -338,17 +338,28 @@ export default function HomePlannerScreen() {
                   {
                     minHeight: MIN_TOUCH_TARGET,
                     minWidth: MIN_TOUCH_TARGET,
-                    backgroundColor: active ? palette.accent : palette.softBg,
-                    borderColor: active ? palette.accent : palette.border,
+                    backgroundColor: active ? palette.accent : colors.backgroundSecondary,
+                    borderColor: active ? palette.accent : colors.borderSubtle,
                     borderRadius: radius.md,
                     paddingHorizontal: spacing.md,
+                    flexDirection: 'row',
+                    alignItems: 'center',
                   },
                 ]}
               >
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: active ? colors.textInverse : palette.accent,
+                    marginRight: 6,
+                  }}
+                />
                 <Text
                   style={[
                     typography.footnoteSemibold,
-                    { color: active ? colors.textInverse : palette.text },
+                    { color: active ? colors.textInverse : colors.textPrimary },
                   ]}
                 >
                   {course.code} • {course.name}

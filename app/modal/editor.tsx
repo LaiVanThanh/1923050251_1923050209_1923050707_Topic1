@@ -233,7 +233,7 @@ export default function ModalEditorScreen() {
   const handleSaveCourse = async () => {
     setValidationError(null);
     if (!courseCode.trim()) {
-      setValidationError('Vui lòng nhập mã học phần (VD: TH7011101).');
+      setValidationError('Vui lòng nhập mã học phần (VD: MAT101).');
       return;
     }
     if (!courseName.trim()) {
@@ -319,7 +319,7 @@ export default function ModalEditorScreen() {
                 },
               ]}
             >
-              📝 {existingAssignment ? 'Sửa Bài tập' : 'Thêm Bài tập'}
+              {existingAssignment ? 'Sửa bài tập' : 'Thêm bài tập'}
             </Text>
           </Pressable>
 
@@ -350,7 +350,7 @@ export default function ModalEditorScreen() {
                 },
               ]}
             >
-              📚 {existingCourse && params.mode === 'course' ? 'Sửa Môn học' : 'Thêm Môn học'}
+              {existingCourse && params.mode === 'course' ? 'Sửa môn học' : 'Thêm môn học'}
             </Text>
           </Pressable>
         </View>
@@ -405,17 +405,28 @@ export default function ModalEditorScreen() {
                         styles.courseOptionChip,
                         {
                           minHeight: MIN_TOUCH_TARGET,
-                          backgroundColor: selected ? palette.accent : palette.softBg,
-                          borderColor: selected ? palette.accent : palette.border,
+                          backgroundColor: selected ? palette.accent : colors.backgroundSecondary,
+                          borderColor: selected ? palette.accent : colors.borderSubtle,
                           borderRadius: radius.md,
                           paddingHorizontal: spacing.md,
+                          flexDirection: 'row',
+                          alignItems: 'center',
                         },
                       ]}
                     >
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: selected ? colors.textInverse : palette.accent,
+                          marginRight: 6,
+                        }}
+                      />
                       <Text
                         style={[
                           typography.footnoteSemibold,
-                          { color: selected ? colors.textInverse : palette.text },
+                          { color: selected ? colors.textInverse : colors.textPrimary },
                         ]}
                       >
                         {course.code} • {course.name}
@@ -439,7 +450,7 @@ export default function ModalEditorScreen() {
                 accessibilityLabel="Tiêu đề bài tập"
                 value={assignmentTitle}
                 onChangeText={setAssignmentTitle}
-                placeholder="VD: Bài tập lớn Thiết kế giao diện Figma & Expo"
+                placeholder="VD: Bài tập thực hành chương 2"
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,
@@ -549,7 +560,7 @@ export default function ModalEditorScreen() {
                 value={courseCode}
                 onChangeText={setCourseCode}
                 autoCapitalize="characters"
-                placeholder="VD: TH7011101"
+                placeholder="VD: MAT101"
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,

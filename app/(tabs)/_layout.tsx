@@ -7,7 +7,7 @@
 
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { MIN_TOUCH_TARGET, useAppTheme } from '../../src/theme/tokens';
 
 export default function TabsLayout() {
@@ -50,7 +50,7 @@ export default function TabsLayout() {
             ]}
           >
             <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
-              {isDark ? '☀️ Light' : '🌙 Dark'}
+              {isDark ? 'Light' : 'Dark'}
             </Text>
           </Pressable>
         ),
@@ -62,7 +62,33 @@ export default function TabsLayout() {
           title: 'Kế hoạch & Lịch tuần',
           tabBarLabel: 'Lịch & Bài tập',
           tabBarIcon: ({ color }) => (
-            <Text style={[typography.title3, { color }]}>📅</Text>
+            <View
+              style={{
+                width: 20,
+                height: 18,
+                borderRadius: 4,
+                borderWidth: 2,
+                borderColor: color,
+                alignItems: 'center',
+                paddingTop: 2,
+              }}
+            >
+              <View
+                style={{
+                  width: 14,
+                  height: 2,
+                  backgroundColor: color,
+                  marginBottom: 2,
+                }}
+              />
+              <View
+                style={{
+                  width: 10,
+                  height: 2,
+                  backgroundColor: color,
+                }}
+              />
+            </View>
           ),
           headerLeft: () => (
             <Pressable
@@ -94,7 +120,33 @@ export default function TabsLayout() {
           title: 'Môn học & Tiến độ',
           tabBarLabel: 'Môn học & Hồ sơ',
           tabBarIcon: ({ color }) => (
-            <Text style={[typography.title3, { color }]}>📚</Text>
+            <View
+              style={{
+                width: 20,
+                height: 18,
+                borderRadius: 3,
+                borderWidth: 2,
+                borderColor: color,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <View
+                style={{
+                  width: 12,
+                  height: 2,
+                  backgroundColor: color,
+                  marginBottom: 3,
+                }}
+              />
+              <View
+                style={{
+                  width: 12,
+                  height: 2,
+                  backgroundColor: color,
+                }}
+              />
+            </View>
           ),
         }}
       />
