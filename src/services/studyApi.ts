@@ -230,8 +230,13 @@ export async function enqueueOfflineMutation(
   }
 }
 
-export async function flushOfflineMutationQueue(): Promise<number> {
+export async function flushOfflineMutationQueue(forceOnline?: boolean): Promise<number> {
   try {
+    const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
+    const effectivelyOffline = forceOnline !== undefined ? !forceOnline : (!isOnline || simulatedOffline);
+    if (effectivelyOffline) {
+      return 0;
+    }
     const raw = await AsyncStorage.getItem(OFFLINE_MUTATION_QUEUE_KEY);
     if (!raw) return 0;
     const queue: QueuedMutationItem[] = JSON.parse(raw);
@@ -358,6 +363,9 @@ export async function fetchAssignmentsApi(): Promise<Assignment[]> {
  */
 export async function createCourseApi(input: CreateCourseInput): Promise<Course> {
   assertServerHealthy();
+  if (!input.code?.trim() || !input.name?.trim()) {
+    throw new Error('Mã học phần và tên môn học là bắt buộc');
+  }
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
 
@@ -459,6 +467,9 @@ export async function updateCourseApi(input: UpdateCourseInput): Promise<Course>
  */
 export async function createAssignmentApi(input: CreateAssignmentInput): Promise<Assignment> {
   assertServerHealthy();
+  if (!input.courseId?.trim() || !input.title?.trim()) {
+    throw new Error('Môn học và tiêu đề bài tập là bắt buộc');
+  }
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
 
@@ -586,6 +597,10 @@ export async function deleteAssignmentApi(assignmentId: string): Promise<void> {
   }
 
   const db = await getRemoteDb();
+  const exists = db.assignments.some((a) => a.id === assignmentId);
+  if (!exists) {
+    throw new Error('Không tìm thấy bài tập');
+  }
   const nextAssignments = db.assignments.filter((a) => a.id !== assignmentId);
   await persistRemoteDb({ ...db, assignments: nextAssignments });
   await saveOfflineSnapshot(db.courses, nextAssignments);

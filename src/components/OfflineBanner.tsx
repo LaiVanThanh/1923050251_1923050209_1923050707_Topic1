@@ -52,7 +52,7 @@ export const OfflineBanner: React.FC = () => {
         >
           <View style={styles.textColumn}>
             <Text style={[typography.footnoteSemibold, { color: colors.offlineBannerText }]}>
-              📡 Chế độ Ngoại tuyến (Offline Mode)
+              Chế độ Ngoại tuyến (Offline Mode)
             </Text>
             <Text style={[typography.caption, { color: colors.offlineBannerText, marginTop: 2 }]}>
               {lastSyncedAt
