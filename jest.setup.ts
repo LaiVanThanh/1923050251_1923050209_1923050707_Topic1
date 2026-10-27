@@ -4,6 +4,27 @@
 
 jest.setTimeout(30000);
 
+if (typeof global.fetch !== 'function') {
+  global.fetch = jest.fn();
+}
+
+beforeEach(() => {
+  jest.spyOn(global, 'fetch').mockImplementation(async (_input, init) => {
+    const bodyStr = typeof init?.body === 'string' ? init.body : '{}';
+    return {
+      ok: true,
+      status: init?.method === 'POST' ? 201 : 200,
+      json: async () => {
+        try {
+          return JSON.parse(bodyStr);
+        } catch {
+          return {};
+        }
+      },
+    } as Response;
+  });
+});
+
 const mockAsyncStorageMap = new Map<string, string>();
 
 jest.mock('@react-native-async-storage/async-storage', () => ({

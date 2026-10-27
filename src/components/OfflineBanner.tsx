@@ -2,6 +2,7 @@
  * OfflineBanner & Rollback Alert Banner — Không dùng icon, không dùng ngoặc đơn
  */
 
+import { onlineManager } from '@tanstack/react-query';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useOptimisticFeedbackStore } from '../hooks/useStudyQueries';
@@ -10,6 +11,7 @@ import {
   useLastSyncedAtSelector,
   useNetworkSyncStore,
 } from '../services/queryClient';
+import { syncWhenBackOnline } from '../services/studyApi';
 import { MIN_TOUCH_TARGET, useAppTheme } from '../theme/tokens';
 import { formatLocalDateTime } from '../utils/dateUtils';
 
@@ -63,7 +65,11 @@ export const OfflineBanner: React.FC = () => {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Bật lại kết nối mạng"
-              onPress={() => setSimulatedOffline(false)}
+              onPress={() => {
+                setSimulatedOffline(false);
+                onlineManager.setOnline(true);
+                void syncWhenBackOnline();
+              }}
               style={[
                 styles.actionPill,
                 {

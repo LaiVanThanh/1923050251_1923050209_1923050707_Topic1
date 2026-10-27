@@ -31,19 +31,19 @@ npx expo start
 
 Có thể chạy giao diện web bằng `npm run web`. Một số chức năng phụ thuộc thiết bị, như thông báo cục bộ và SecureStore, cần được kiểm tra trên bản native.
 
-## API
+## API và Đồng bộ Ngoại tuyến
 
-Ứng dụng cần API có hai tài nguyên REST: `/courses` và `/assignments`. Để dùng máy chủ API của nhóm, tạo tệp `.env` ở thư mục gốc:
-
-```env
-EXPO_PUBLIC_API_BASE_URL=https://your-api-base-url
-```
-
-Giá trị là địa chỉ gốc của API, không thêm `/courses` hoặc `/assignments` vào cuối. Khởi động lại Expo sau khi đổi `.env`. Nếu không cấu hình địa chỉ API, ứng dụng dùng dữ liệu mẫu lưu cục bộ.
+Ứng dụng kết nối tới REST API từ xa với hai tài nguyên `/courses` và `/assignments`:
+- Tệp `.env` và hằng số `DEFAULT_API_BASE_URL` trong `src/services/studyApi.ts` đã được cấu hình sẵn trỏ tới máy chủ REST API:
+  ```env
+  EXPO_PUBLIC_API_BASE_URL=https://my-json-server.typicode.com/LaiVanThanh/1923050251_1923050209_1923050707_Topic1
+  ```
+- Khi có mạng, mọi thao tác tải danh sách và tạo/sửa/xóa (`GET`, `POST`, `PUT`, `DELETE`) đều được gửi trực tiếp lên máy chủ REST API.
+- Khi ngoại tuyến, thao tác tạo/sửa/xóa được lưu vào `AsyncStorage` và xếp vào hàng đợi `study_planner_mutation_queue_v1`. Ngay khi mạng kết nối trở lại, hàm `syncWhenBackOnline()` và `flushOfflineMutationQueue()` tự động gửi toàn bộ thay đổi trong hàng đợi lên máy chủ từ xa.
 
 ## Đăng nhập demo
 
-Màn hình đăng nhập hiện dùng luồng demo cục bộ. Nhập email đúng định dạng và mật khẩu dài ít nhất 6 ký tự để vào ứng dụng; không cần tạo tài khoản trên máy chủ.
+Màn hình đăng nhập hỗ trợ 3 tài khoản sinh viên mẫu hoặc nhập email đúng định dạng và mật khẩu dài ít nhất 6 ký tự. Phiên đăng nhập được mã hóa và lưu trữ trong `Expo SecureStore`.
 
 ## Kiểm tra mã nguồn
 
@@ -52,5 +52,3 @@ npm run typecheck
 npm run lint
 npm test
 ```
-
-

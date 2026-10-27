@@ -21,6 +21,7 @@ import {
   useOptimisticFeedbackStore,
 } from '../../src/hooks/useStudyQueries';
 import { useNetworkSyncStore } from '../../src/services/queryClient';
+import { syncWhenBackOnline } from '../../src/services/studyApi';
 import { useAuthStore, useCurrentUser } from '../../src/store/useAuthStore';
 import { usePlannerFilterStore } from '../../src/store/usePlannerFilterStore';
 import { MIN_TOUCH_TARGET, useAppTheme } from '../../src/theme/tokens';
@@ -67,6 +68,9 @@ export default function CoursesAndProgressScreen() {
     const nextOffline = !simulatedOffline;
     setSimulatedOffline(nextOffline);
     onlineManager.setOnline(!nextOffline);
+    if (!nextOffline) {
+      void syncWhenBackOnline();
+    }
   };
 
   const handleSignOut = async () => {

@@ -1,9 +1,10 @@
 /**
- * Module 3 (Bước 3.1) & Module 5 (Bước 5.1): Remote API Service & Offline Queue
- * - Quản lý 2 nhánh tài nguyên: /courses (chứa sẵn 6 môn học mẫu học kỳ của sinh viên) và /assignments.
- * - Hỗ trợ kết nối Remote REST API (qua biến môi trường EXPO_PUBLIC_API_BASE_URL)
- *   kèm Remote Store đồng bộ và Persistence xuống thiết bị để hoạt động mượt mà cả Online lẫn Offline.
- * - Hỗ trợ giả lập lỗi 500 (simulateServerError500) để kiểm thử & demo trực tiếp Optimistic Rollback.
+ * Module 3 & Module 5: Remote API Service & Offline Queue
+ * - Quản lý 2 nhánh tài nguyên REST: /courses và /assignments.
+ * - Luôn có địa chỉ máy chủ REST API mặc định (DEFAULT_API_BASE_URL) ngay cả khi chưa cấu hình biến môi trường EXPO_PUBLIC_API_BASE_URL.
+ * - Khi đang Online: gửi trực tiếp các thao tác GET / POST / PUT / DELETE lên máy chủ từ xa qua fetch().
+ * - Khi đang Offline: lưu vào AsyncStorage và đẩy vào hàng đợi Offline Mutation Queue.
+ * - Khi mạng kết nối trở lại: tự động xả hàng đợi (flushOfflineMutationQueue) gửi toàn bộ thay đổi lên máy chủ từ xa.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,24 +16,31 @@ import {
   UpdateAssignmentInput,
   UpdateCourseInput,
 } from '../types/domain';
-import { saveOfflineSnapshot, useNetworkSyncStore } from './queryClient';
+import { queryClient, saveOfflineSnapshot, useNetworkSyncStore } from './queryClient';
 
 const REMOTE_DB_STORAGE_KEY = 'study_planner_remote_db_v1';
 const OFFLINE_MUTATION_QUEUE_KEY = 'study_planner_mutation_queue_v1';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || '';
+export const DEFAULT_API_BASE_URL =
+  'https://my-json-server.typicode.com/LaiVanThanh/1923050251_1923050209_1923050707_Topic1';
+
+export function getApiBaseUrl(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+  return (envUrl && envUrl.length > 0 ? envUrl : DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+}
 
 export interface QueuedMutationItem {
   id: string;
-  type: 'CREATE_COURSE' | 'UPDATE_COURSE' | 'CREATE_ASSIGNMENT' | 'UPDATE_ASSIGNMENT' | 'DELETE_ASSIGNMENT';
+  type:
+    | 'CREATE_COURSE'
+    | 'UPDATE_COURSE'
+    | 'CREATE_ASSIGNMENT'
+    | 'UPDATE_ASSIGNMENT'
+    | 'DELETE_ASSIGNMENT';
   payload: unknown;
   createdAt: string;
 }
 
-/**
- * Tạo mốc thời gian tương đối so với thời điểm hiện tại theo giờ địa phương
- * để dữ liệu mẫu luôn hiển thị sinh động trong Widget 48h, Hôm nay, Ngày mai, Tuần này.
- */
 function buildRelativeLocalIso(dayOffset: number, hour: number, minute = 0): string {
   const now = new Date();
   const target = new Date(
@@ -168,6 +176,8 @@ export function createSeedAssignments(): Assignment[] {
 interface RemoteDatabaseState {
   courses: Course[];
   assignments: Assignment[];
+  deletedAssignmentIds?: string[];
+  hasLocalEdits?: boolean;
 }
 
 let inMemoryRemoteDb: RemoteDatabaseState | null = null;
@@ -192,6 +202,8 @@ async function getRemoteDb(): Promise<RemoteDatabaseState> {
   inMemoryRemoteDb = {
     courses: createSeedCourses(),
     assignments: createSeedAssignments(),
+    deletedAssignmentIds: [],
+    hasLocalEdits: false,
   };
   try {
     await AsyncStorage.setItem(REMOTE_DB_STORAGE_KEY, JSON.stringify(inMemoryRemoteDb));
@@ -230,62 +242,118 @@ export async function enqueueOfflineMutation(
   }
 }
 
+async function sendQueuedMutationToServer(
+  baseUrl: string,
+  item: QueuedMutationItem
+): Promise<boolean> {
+  try {
+    let response: Response;
+    if (item.type === 'CREATE_COURSE') {
+      response = await fetch(`${baseUrl}/courses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+    } else if (item.type === 'UPDATE_COURSE') {
+      const payload = item.payload as { id: string };
+      response = await fetch(`${baseUrl}/courses/${payload.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+    } else if (item.type === 'CREATE_ASSIGNMENT') {
+      response = await fetch(`${baseUrl}/assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+    } else if (item.type === 'UPDATE_ASSIGNMENT') {
+      const payload = item.payload as { id: string };
+      response = await fetch(`${baseUrl}/assignments/${payload.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+    } else {
+      const payload = item.payload as { id: string };
+      response = await fetch(`${baseUrl}/assignments/${payload.id}`, {
+        method: 'DELETE',
+      });
+    }
+    return response.status < 500;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Xả hàng đợi Offline Mutation Queue lên máy chủ từ xa (getApiBaseUrl()) ngay khi có mạng.
+ * Các mục gửi thành công sẽ được xóa khỏi hàng đợi; các mục lỗi mạng sẽ được giữ lại để thử lại.
+ */
 export async function flushOfflineMutationQueue(forceOnline?: boolean): Promise<number> {
   try {
     const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
-    const effectivelyOffline = forceOnline !== undefined ? !forceOnline : (!isOnline || simulatedOffline);
+    const effectivelyOffline =
+      forceOnline !== undefined ? !forceOnline : !isOnline || simulatedOffline;
     if (effectivelyOffline) {
       return 0;
     }
+
     const raw = await AsyncStorage.getItem(OFFLINE_MUTATION_QUEUE_KEY);
-    if (!raw) return 0;
+    if (!raw) {
+      useNetworkSyncStore.getState().resetPendingMutations();
+      return 0;
+    }
+
     const queue: QueuedMutationItem[] = JSON.parse(raw);
-    if (API_BASE_URL && queue.length > 0) {
-      for (const item of queue) {
-        try {
-          if (item.type === 'CREATE_COURSE') {
-            await fetch(`${API_BASE_URL}/courses`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(item.payload),
-            });
-          } else if (item.type === 'UPDATE_COURSE') {
-            const payload = item.payload as { id: string };
-            await fetch(`${API_BASE_URL}/courses/${payload.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(item.payload),
-            });
-          } else if (item.type === 'CREATE_ASSIGNMENT') {
-            await fetch(`${API_BASE_URL}/assignments`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(item.payload),
-            });
-          } else if (item.type === 'UPDATE_ASSIGNMENT') {
-            const payload = item.payload as { id: string };
-            await fetch(`${API_BASE_URL}/assignments/${payload.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(item.payload),
-            });
-          } else if (item.type === 'DELETE_ASSIGNMENT') {
-            const payload = item.payload as { id: string };
-            await fetch(`${API_BASE_URL}/assignments/${payload.id}`, {
-              method: 'DELETE',
-            });
-          }
-        } catch {
-          // Tiếp tục đồng bộ các mục khác trong hàng đợi
-        }
+    if (queue.length === 0) {
+      await AsyncStorage.removeItem(OFFLINE_MUTATION_QUEUE_KEY);
+      useNetworkSyncStore.getState().resetPendingMutations();
+      return 0;
+    }
+
+    const baseUrl = getApiBaseUrl();
+    const remainingQueue: QueuedMutationItem[] = [];
+    let syncedCount = 0;
+
+    for (const item of queue) {
+      const ok = await sendQueuedMutationToServer(baseUrl, item);
+      if (ok) {
+        syncedCount += 1;
+      } else {
+        remainingQueue.push(item);
       }
     }
-    await AsyncStorage.removeItem(OFFLINE_MUTATION_QUEUE_KEY);
-    useNetworkSyncStore.getState().resetPendingMutations();
-    return queue.length;
+
+    if (remainingQueue.length === 0) {
+      await AsyncStorage.removeItem(OFFLINE_MUTATION_QUEUE_KEY);
+      useNetworkSyncStore.getState().resetPendingMutations();
+    } else {
+      await AsyncStorage.setItem(
+        OFFLINE_MUTATION_QUEUE_KEY,
+        JSON.stringify(remainingQueue)
+      );
+      useNetworkSyncStore.setState({ pendingMutationsCount: remainingQueue.length });
+    }
+
+    const db = await getRemoteDb();
+    await saveOfflineSnapshot(db.courses, db.assignments);
+
+    return syncedCount;
   } catch {
-    useNetworkSyncStore.getState().resetPendingMutations();
     return 0;
+  }
+}
+
+/**
+ * Hàm kích hoạt đồng bộ tức thì khi mạng kết nối trở lại:
+ * Xả toàn bộ hàng đợi mutation lên máy chủ từ xa và làm mới truy vấn TanStack Query.
+ */
+export async function syncWhenBackOnline(): Promise<void> {
+  const flushed = await flushOfflineMutationQueue(true);
+  if (flushed > 0) {
+    await queryClient.invalidateQueries({ queryKey: ['courses'] });
+    await queryClient.invalidateQueries({ queryKey: ['assignments'] });
   }
 }
 
@@ -302,25 +370,31 @@ function assertServerHealthy(): void {
 export async function fetchCoursesApi(): Promise<Course[]> {
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
+    await flushOfflineMutationQueue();
     try {
-      const response = await fetch(`${API_BASE_URL}/courses`);
+      const response = await fetch(`${baseUrl}/courses`);
       if (response.ok) {
         const remoteCourses = (await response.json()) as Course[];
         const db = await getRemoteDb();
-        await persistRemoteDb({ ...db, courses: remoteCourses });
-        await saveOfflineSnapshot(remoteCourses, db.assignments);
-        return remoteCourses;
+        if (Array.isArray(remoteCourses) && remoteCourses.length > 0) {
+          const mergedCourses = db.hasLocalEdits
+            ? mergeCourses(remoteCourses, db.courses)
+            : remoteCourses;
+          await persistRemoteDb({ ...db, courses: mergedCourses });
+          await saveOfflineSnapshot(mergedCourses, db.assignments);
+          return [...mergedCourses];
+        }
       }
     } catch {
-      // Fallback to local persisted remote DB
+      // Fallback to local persisted DB when network request fails
     }
   }
 
   const db = await getRemoteDb();
   if (!effectivelyOffline) {
-    await flushOfflineMutationQueue();
     await saveOfflineSnapshot(db.courses, db.assignments);
   }
   return [...db.courses];
@@ -332,28 +406,69 @@ export async function fetchCoursesApi(): Promise<Course[]> {
 export async function fetchAssignmentsApi(): Promise<Assignment[]> {
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
+    await flushOfflineMutationQueue();
     try {
-      const response = await fetch(`${API_BASE_URL}/assignments`);
+      const response = await fetch(`${baseUrl}/assignments`);
       if (response.ok) {
         const remoteAssignments = (await response.json()) as Assignment[];
         const db = await getRemoteDb();
-        await persistRemoteDb({ ...db, assignments: remoteAssignments });
-        await saveOfflineSnapshot(db.courses, remoteAssignments);
-        return remoteAssignments;
+        if (Array.isArray(remoteAssignments) && remoteAssignments.length > 0) {
+          const mergedAssignments = db.hasLocalEdits
+            ? mergeAssignments(
+                remoteAssignments,
+                db.assignments,
+                db.deletedAssignmentIds ?? []
+              )
+            : remoteAssignments;
+          await persistRemoteDb({ ...db, assignments: mergedAssignments });
+          await saveOfflineSnapshot(db.courses, mergedAssignments);
+          return [...mergedAssignments];
+        }
       }
     } catch {
-      // Fallback to local persisted remote DB
+      // Fallback to local persisted DB when network request fails
     }
   }
 
   const db = await getRemoteDb();
   if (!effectivelyOffline) {
-    await flushOfflineMutationQueue();
     await saveOfflineSnapshot(db.courses, db.assignments);
   }
   return [...db.assignments];
+}
+
+function mergeCourses(remote: Course[], local: Course[]): Course[] {
+  const map = new Map<string, Course>();
+  for (const item of remote) {
+    map.set(item.id, item);
+  }
+  for (const item of local) {
+    map.set(item.id, item);
+  }
+  return Array.from(map.values());
+}
+
+function mergeAssignments(
+  remote: Assignment[],
+  local: Assignment[],
+  deletedIds: string[]
+): Assignment[] {
+  const deletedSet = new Set(deletedIds);
+  const map = new Map<string, Assignment>();
+  for (const item of remote) {
+    if (!deletedSet.has(item.id)) {
+      map.set(item.id, item);
+    }
+  }
+  for (const item of local) {
+    if (!deletedSet.has(item.id)) {
+      map.set(item.id, item);
+    }
+  }
+  return Array.from(map.values());
 }
 
 /**
@@ -366,6 +481,7 @@ export async function createCourseApi(input: CreateCourseInput): Promise<Course>
   }
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
   const newCourse: Course = {
     id: `crs-${Date.now()}`,
@@ -376,19 +492,14 @@ export async function createCourseApi(input: CreateCourseInput): Promise<Course>
     room: input.room?.trim() || 'Phòng học A1',
   };
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
     try {
-      const response = await fetch(`${API_BASE_URL}/courses`, {
+      const response = await fetch(`${baseUrl}/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCourse),
       });
-      if (response.ok) {
-        const remoteCreated = (await response.json()) as Course;
-        if (remoteCreated && remoteCreated.id) {
-          newCourse.id = remoteCreated.id;
-        }
-      } else if (response.status >= 500) {
+      if (response.status >= 500) {
         throw new Error('500 Internal Server Error: Máy chủ từ chối tạo môn học.');
       }
     } catch (err) {
@@ -397,13 +508,17 @@ export async function createCourseApi(input: CreateCourseInput): Promise<Course>
       }
       await enqueueOfflineMutation('CREATE_COURSE', newCourse);
     }
-  } else if (effectivelyOffline) {
+  } else {
     await enqueueOfflineMutation('CREATE_COURSE', newCourse);
   }
 
   const db = await getRemoteDb();
   const nextCourses = [...db.courses, newCourse];
-  await persistRemoteDb({ ...db, courses: nextCourses });
+  await persistRemoteDb({
+    ...db,
+    courses: nextCourses,
+    hasLocalEdits: true,
+  });
   await saveOfflineSnapshot(nextCourses, db.assignments);
 
   return newCourse;
@@ -416,6 +531,7 @@ export async function updateCourseApi(input: UpdateCourseInput): Promise<Course>
   assertServerHealthy();
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
   const db = await getRemoteDb();
   const existingIndex = db.courses.findIndex((c) => c.id === input.id);
@@ -432,14 +548,14 @@ export async function updateCourseApi(input: UpdateCourseInput): Promise<Course>
     ...(input.room !== undefined ? { room: input.room.trim() } : {}),
   };
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
     try {
-      const response = await fetch(`${API_BASE_URL}/courses/${updatedCourse.id}`, {
+      const response = await fetch(`${baseUrl}/courses/${updatedCourse.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedCourse),
       });
-      if (!response.ok && response.status >= 500) {
+      if (response.status >= 500) {
         throw new Error('500 Internal Server Error: Máy chủ từ chối cập nhật môn học.');
       }
     } catch (err) {
@@ -448,13 +564,17 @@ export async function updateCourseApi(input: UpdateCourseInput): Promise<Course>
       }
       await enqueueOfflineMutation('UPDATE_COURSE', updatedCourse);
     }
-  } else if (effectivelyOffline) {
+  } else {
     await enqueueOfflineMutation('UPDATE_COURSE', updatedCourse);
   }
 
   const nextCourses = [...db.courses];
   nextCourses[existingIndex] = updatedCourse;
-  await persistRemoteDb({ ...db, courses: nextCourses });
+  await persistRemoteDb({
+    ...db,
+    courses: nextCourses,
+    hasLocalEdits: true,
+  });
   await saveOfflineSnapshot(nextCourses, db.assignments);
 
   return updatedCourse;
@@ -470,6 +590,7 @@ export async function createAssignmentApi(input: CreateAssignmentInput): Promise
   }
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
   const newAssignment: Assignment = {
     id: `asg-${Date.now()}`,
@@ -481,19 +602,14 @@ export async function createAssignmentApi(input: CreateAssignmentInput): Promise
     photoUri: input.photoUri,
   };
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
     try {
-      const response = await fetch(`${API_BASE_URL}/assignments`, {
+      const response = await fetch(`${baseUrl}/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAssignment),
       });
-      if (response.ok) {
-        const remoteCreated = (await response.json()) as Assignment;
-        if (remoteCreated && remoteCreated.id) {
-          newAssignment.id = remoteCreated.id;
-        }
-      } else if (response.status >= 500) {
+      if (response.status >= 500) {
         throw new Error('500 Internal Server Error: Máy chủ từ chối tạo bài tập.');
       }
     } catch (err) {
@@ -502,13 +618,17 @@ export async function createAssignmentApi(input: CreateAssignmentInput): Promise
       }
       await enqueueOfflineMutation('CREATE_ASSIGNMENT', newAssignment);
     }
-  } else if (effectivelyOffline) {
+  } else {
     await enqueueOfflineMutation('CREATE_ASSIGNMENT', newAssignment);
   }
 
   const db = await getRemoteDb();
   const nextAssignments = [newAssignment, ...db.assignments];
-  await persistRemoteDb({ ...db, assignments: nextAssignments });
+  await persistRemoteDb({
+    ...db,
+    assignments: nextAssignments,
+    hasLocalEdits: true,
+  });
   await saveOfflineSnapshot(db.courses, nextAssignments);
 
   return newAssignment;
@@ -521,6 +641,7 @@ export async function updateAssignmentApi(input: UpdateAssignmentInput): Promise
   assertServerHealthy();
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
   const db = await getRemoteDb();
   const existingIndex = db.assignments.findIndex((a) => a.id === input.id);
@@ -540,14 +661,14 @@ export async function updateAssignmentApi(input: UpdateAssignmentInput): Promise
     ...(input.notificationId !== undefined ? { notificationId: input.notificationId } : {}),
   };
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  if (!effectivelyOffline) {
     try {
-      const response = await fetch(`${API_BASE_URL}/assignments/${updatedAssignment.id}`, {
+      const response = await fetch(`${baseUrl}/assignments/${updatedAssignment.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedAssignment),
       });
-      if (!response.ok && response.status >= 500) {
+      if (response.status >= 500) {
         throw new Error('500 Internal Server Error: Máy chủ từ chối cập nhật bài tập.');
       }
     } catch (err) {
@@ -556,13 +677,17 @@ export async function updateAssignmentApi(input: UpdateAssignmentInput): Promise
       }
       await enqueueOfflineMutation('UPDATE_ASSIGNMENT', updatedAssignment);
     }
-  } else if (effectivelyOffline) {
+  } else {
     await enqueueOfflineMutation('UPDATE_ASSIGNMENT', updatedAssignment);
   }
 
   const nextAssignments = [...db.assignments];
   nextAssignments[existingIndex] = updatedAssignment;
-  await persistRemoteDb({ ...db, assignments: nextAssignments });
+  await persistRemoteDb({
+    ...db,
+    assignments: nextAssignments,
+    hasLocalEdits: true,
+  });
   await saveOfflineSnapshot(db.courses, nextAssignments);
 
   return updatedAssignment;
@@ -575,13 +700,20 @@ export async function deleteAssignmentApi(assignmentId: string): Promise<void> {
   assertServerHealthy();
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
+  const baseUrl = getApiBaseUrl();
 
-  if (!effectivelyOffline && API_BASE_URL) {
+  const db = await getRemoteDb();
+  const exists = db.assignments.some((a) => a.id === assignmentId);
+  if (!exists) {
+    throw new Error('Không tìm thấy bài tập');
+  }
+
+  if (!effectivelyOffline) {
     try {
-      const response = await fetch(`${API_BASE_URL}/assignments/${assignmentId}`, {
+      const response = await fetch(`${baseUrl}/assignments/${assignmentId}`, {
         method: 'DELETE',
       });
-      if (!response.ok && response.status >= 500) {
+      if (response.status >= 500) {
         throw new Error('500 Internal Server Error: Máy chủ từ chối xóa bài tập.');
       }
     } catch (err) {
@@ -590,26 +722,31 @@ export async function deleteAssignmentApi(assignmentId: string): Promise<void> {
       }
       await enqueueOfflineMutation('DELETE_ASSIGNMENT', { id: assignmentId });
     }
-  } else if (effectivelyOffline) {
+  } else {
     await enqueueOfflineMutation('DELETE_ASSIGNMENT', { id: assignmentId });
   }
 
-  const db = await getRemoteDb();
-  const exists = db.assignments.some((a) => a.id === assignmentId);
-  if (!exists) {
-    throw new Error('Không tìm thấy bài tập');
-  }
   const nextAssignments = db.assignments.filter((a) => a.id !== assignmentId);
-  await persistRemoteDb({ ...db, assignments: nextAssignments });
+  const deletedAssignmentIds = Array.from(
+    new Set([...(db.deletedAssignmentIds ?? []), assignmentId])
+  );
+  await persistRemoteDb({
+    ...db,
+    assignments: nextAssignments,
+    deletedAssignmentIds,
+    hasLocalEdits: true,
+  });
   await saveOfflineSnapshot(db.courses, nextAssignments);
 }
 
 /**
- * Hàm phục vụ kiểm thử (Unit/Critical Path Test): đặt lại dữ liệu về trạng thái mẫu
+ * Hàm phục vụ kiểm thử: đặt lại dữ liệu về trạng thái mẫu
  */
 export function resetRemoteDbForTests(customData?: RemoteDatabaseState): void {
   inMemoryRemoteDb = customData ?? {
     courses: createSeedCourses(),
     assignments: createSeedAssignments(),
+    deletedAssignmentIds: [],
+    hasLocalEdits: false,
   };
 }

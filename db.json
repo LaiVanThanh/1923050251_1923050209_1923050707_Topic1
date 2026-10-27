@@ -1,0 +1,110 @@
+{
+  "courses": [
+    {
+      "id": "crs-math-101",
+      "code": "MAT101",
+      "name": "Giải tích 1",
+      "colour": "blue",
+      "instructor": "TS. Nguyễn Văn Nam",
+      "room": "Phòng A1-101"
+    },
+    {
+      "id": "crs-phy-102",
+      "code": "PHY102",
+      "name": "Vật lý đại cương",
+      "colour": "indigo",
+      "instructor": "ThS. Trần Thị Mai",
+      "room": "Phòng B2-203"
+    },
+    {
+      "id": "crs-eng-103",
+      "code": "ENG103",
+      "name": "Tiếng Anh học thuật",
+      "colour": "teal",
+      "instructor": "Cô Jessica Brown",
+      "room": "Phòng C1-305"
+    },
+    {
+      "id": "crs-prog-104",
+      "code": "PRO104",
+      "name": "Nhập môn lập trình",
+      "colour": "purple",
+      "instructor": "ThS. Lê Hoàng Tuấn",
+      "room": "Phòng Lab 2"
+    },
+    {
+      "id": "crs-hist-105",
+      "code": "HIS105",
+      "name": "Lịch sử văn minh",
+      "colour": "green",
+      "instructor": "TS. Phạm Quốc Huy",
+      "room": "Hội trường C"
+    },
+    {
+      "id": "crs-eco-106",
+      "code": "ECO106",
+      "name": "Kinh tế vi mô",
+      "colour": "orange",
+      "instructor": "ThS. Đỗ Thu Hà",
+      "room": "Phòng A2-204"
+    }
+  ],
+  "assignments": [
+    {
+      "id": "asg-101",
+      "courseId": "crs-math-101",
+      "title": "Bài tập Giải tích chương 2",
+      "dueAt": "2026-10-28T09:00:00.000Z",
+      "status": "pending",
+      "notes": "Làm các bài tập 2.1 đến 2.15 trong giáo trình."
+    },
+    {
+      "id": "asg-102",
+      "courseId": "crs-phy-102",
+      "title": "Báo cáo thực hành thí nghiệm số 1",
+      "dueAt": "2026-10-28T15:00:00.000Z",
+      "status": "pending",
+      "notes": "Tính toán sai số và vẽ đồ thị dao động."
+    },
+    {
+      "id": "asg-103",
+      "courseId": "crs-eng-103",
+      "title": "Viết bài luận ngắn Academic Essay",
+      "dueAt": "2026-10-29T09:30:00.000Z",
+      "status": "pending",
+      "notes": "Chủ đề môi trường, độ dài từ 250 đến 300 từ."
+    },
+    {
+      "id": "asg-104",
+      "courseId": "crs-prog-104",
+      "title": "Bài tập thực hành Mảng và Chuỗi",
+      "dueAt": "2026-10-30T07:00:00.000Z",
+      "status": "pending",
+      "notes": "Hoàn thành các bài tập trên hệ thống nộp bài."
+    },
+    {
+      "id": "asg-105",
+      "courseId": "crs-hist-105",
+      "title": "Đọc tài liệu chuẩn bị thảo luận nhóm",
+      "dueAt": "2026-10-26T14:00:00.000Z",
+      "status": "completed",
+      "notes": "Chuẩn bị nội dung cho buổi thảo luận trên lớp."
+    },
+    {
+      "id": "asg-106",
+      "courseId": "crs-eco-106",
+      "title": "Phân tích tình huống Cung - Cầu",
+      "dueAt": "2026-10-31T11:00:00.000Z",
+      "status": "pending",
+      "notes": "Tìm ví dụ thực tế về biến động giá hàng hóa."
+    },
+    {
+      "id": "asg-107",
+      "courseId": "crs-math-101",
+      "title": "Ôn tập ma trận và hệ phương trình",
+      "dueAt": "2026-10-25T03:00:00.000Z",
+      "status": "completed",
+      "notes": "Xem lại lý thuyết và các dạng bài tập mẫu."
+    }
+  ]
+}

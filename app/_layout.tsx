@@ -16,6 +16,7 @@ import {
   queryClient,
   useNetworkSyncStore,
 } from '../src/services/queryClient';
+import { syncWhenBackOnline } from '../src/services/studyApi';
 import { useAuthStatus, useAuthStore } from '../src/store/useAuthStore';
 import { useAppTheme } from '../src/theme/tokens';
 
@@ -53,7 +54,11 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
       const online = Boolean(state.isConnected && state.isInternetReachable !== false);
       useNetworkSyncStore.getState().setOnlineStatus(online);
       const { simulatedOffline } = useNetworkSyncStore.getState();
-      onlineManager.setOnline(online && !simulatedOffline);
+      const effectivelyOnline = online && !simulatedOffline;
+      onlineManager.setOnline(effectivelyOnline);
+      if (effectivelyOnline) {
+        void syncWhenBackOnline();
+      }
     });
     return () => unsubscribe();
   }, []);
