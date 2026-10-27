@@ -1,8 +1,5 @@
 /**
- * Module 4 (Bước 4.3 — Phân khu 1): Widget 48 Giờ Tới (48h Due Summary Widget)
- * Yêu cầu nâng cao lấy điểm > 8:
- * "A widget-style summary on the home screen showing what is due in the next 48 hours."
- * Thiết kế chuyển thể từ khu vực "ListNews / ViewCard-news (r=16)" ở đầu màn hình "1. Schedule" trong Figma.
+ * DueNext48hWidget — Tối giản theo tông màu Google Tasks
  */
 
 import React from 'react';
@@ -35,8 +32,8 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
         styles.widgetCard,
         {
           backgroundColor: colors.surfaceElevated,
-          borderColor: count > 0 ? colors.primary : colors.borderSubtle,
-          borderRadius: radius.lg,
+          borderColor: colors.borderSubtle,
+          borderRadius: radius.md,
           padding: spacing.lg,
           marginBottom: spacing.lg,
         },
@@ -45,7 +42,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
       <View style={styles.headerRow}>
         <View style={styles.titleArea}>
           <Text style={[typography.caption2Semibold, { color: colors.primary }]}>
-            WIDGET 48 GIỜ TỚI • KHẨN CẤP
+            TRONG 48 GIỜ TỚI
           </Text>
           <Text style={[typography.title3, { color: colors.textPrimary, marginTop: 2 }]}>
             {count > 0
@@ -57,7 +54,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
           style={[
             styles.countBadge,
             {
-              backgroundColor: count > 0 ? colors.primary : colors.successSoft,
+              backgroundColor: colors.primarySoft,
               borderRadius: radius.pill,
             },
           ]}
@@ -66,7 +63,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
             testID="widget-48h-count"
             style={[
               typography.headline,
-              { color: count > 0 ? colors.textInverse : colors.success },
+              { color: colors.primary },
             ]}
           >
             {count}
@@ -81,7 +78,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
             { color: colors.textSecondary, marginTop: spacing.xs },
           ]}
         >
-          Tuyệt vời! Bạn đã hoàn tất hoặc chưa có bài tập nào cần nộp gấp trong 2 ngày tới.
+          Bạn đã hoàn tất hoặc chưa có bài tập nào cần nộp gấp trong 2 ngày tới.
         </Text>
       ) : (
         <ScrollView
@@ -91,7 +88,6 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
         >
           {assignmentsDue48h.map((item) => {
             const course = courseMap.get(item.courseId);
-            const palette = colors.courseColors[course?.colour ?? 'blue'];
             const deadlineInfo = getDeadlineBadgeInfo(item.dueAt, item.status, now);
 
             return (
@@ -106,8 +102,8 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
                   {
                     minHeight: MIN_TOUCH_TARGET,
                     backgroundColor: colors.surfaceCard,
-                    borderColor: palette.border,
-                    borderRadius: radius.lg,
+                    borderColor: colors.borderSubtle,
+                    borderRadius: radius.md,
                     padding: spacing.md,
                     opacity: pressed ? 0.85 : 1,
                   },
@@ -118,18 +114,18 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
                     style={[
                       styles.courseTag,
                       {
-                        backgroundColor: palette.softBg,
+                        backgroundColor: colors.primarySoft,
                         borderRadius: radius.sm,
                         paddingHorizontal: 6,
                         paddingVertical: 2,
                       },
                     ]}
                   >
-                    <Text style={[typography.caption2Semibold, { color: palette.text }]}>
+                    <Text style={[typography.caption2Semibold, { color: colors.primary }]}>
                       {course?.code ?? 'COURSE'}
                     </Text>
                   </View>
-                  <Text style={[typography.captionSemibold, { color: colors.warning }]}>
+                  <Text style={[typography.captionSemibold, { color: colors.textSecondary }]}>
                     {formatLocalTime(item.dueAt)}
                   </Text>
                 </View>
@@ -144,7 +140,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
                   {item.title}
                 </Text>
 
-                <Text style={[typography.captionSemibold, { color: palette.accent }]}>
+                <Text style={[typography.captionSemibold, { color: colors.primary }]}>
                   {deadlineInfo.label}
                 </Text>
               </Pressable>
@@ -158,7 +154,7 @@ export const DueNext48hWidget: React.FC<DueNext48hWidgetProps> = ({
 
 const styles = StyleSheet.create({
   widgetCard: {
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   headerRow: {
     flexDirection: 'row',
@@ -170,14 +166,14 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   countBadge: {
-    minWidth: 40,
-    height: 40,
+    minWidth: 36,
+    height: 36,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   miniCard: {
-    width: 215,
+    width: 210,
     borderWidth: 1,
     justifyContent: 'space-between',
   },

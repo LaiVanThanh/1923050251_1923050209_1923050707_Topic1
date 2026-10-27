@@ -1,8 +1,10 @@
 /**
- * Module 1 (Bước 1.2): Single Source of Truth Theme Tokens
- * Trích xuất & chuẩn hóa từ "Student Planner App (Community).fig" (UI kit -> Color & Typography).
- * QUY TẮC BẮT BUỘC: Tuyệt đối không viết bất kỳ mã màu hex (#...) nào ở ngoài file tokens.ts này.
- * Mọi văn bản thân bài đều đảm bảo độ tương phản WCAG AA >= 4.5:1 trên cả Light & Dark mode.
+ * Module 1: Single Source of Truth Theme Tokens
+ * Bảng màu tối giản theo phong cách Google Tasks:
+ * - Tông màu chủ đạo: Google Blue (#1A73E8 trên Light Mode, #8AB4F8 trên Dark Mode)
+ * - Nền trắng/xám trung tính sạch sẽ, không dùng màu sắc lòe loẹt.
+ * - QUY TẮC BẮT BUỘC: Tuyệt đối không viết bất kỳ mã màu hex (#...) nào ở ngoài file tokens.ts này.
+ * - Mọi văn bản thân bài đều đảm bảo độ tương phản WCAG AA >= 4.5:1 trên cả Light & Dark mode.
  */
 
 import { useColorScheme } from 'react-native';
@@ -54,206 +56,147 @@ export interface AppThemeColors {
   courseColors: Record<CourseColorKey, CourseColorToken>;
 }
 
+const LIGHT_GOOGLE_TASK_COURSE_TOKEN: CourseColorToken = {
+  accent: '#1A73E8',
+  softBg: '#E8F0FE',
+  border: '#D2E3FC',
+  text: '#174EA6',
+};
+
+const LIGHT_NEUTRAL_TASK_COURSE_TOKEN: CourseColorToken = {
+  accent: '#1A73E8',
+  softBg: '#F1F3F4',
+  border: '#DADCE0',
+  text: '#3C4043',
+};
+
 /**
- * Bảng màu Light Mode (Dựa trên Figma UI Kit Light/* + chuẩn tương phản WCAG AA >= 4.5:1)
+ * Bảng màu Light Mode chuẩn Google Tasks (Trắng #FFFFFF, Xám nhạt #F8F9FA / #F1F3F4, Chữ #202124 / #5F6368, Google Blue #1A73E8)
  */
 export const LIGHT_COLORS: AppThemeColors = {
   backgroundPrimary: '#FFFFFF',
-  backgroundSecondary: '#F2F2F7',
-  backgroundTertiary: '#F8F8FA',
+  backgroundSecondary: '#F8F9FA',
+  backgroundTertiary: '#F1F3F4',
   surfaceCard: '#FFFFFF',
-  surfaceElevated: '#F7F7FA',
-  textPrimary: '#191A1C', // Contrast 17.4:1 trên #FFFFFF
-  textSecondary: '#48484A', // Contrast 9.0:1 trên #FFFFFF và 8.0:1 trên #F2F2F7 (>= 4.5:1)
-  textTertiary: '#636366', // Contrast 5.9:1 trên #FFFFFF (>= 4.5:1)
+  surfaceElevated: '#F8F9FA',
+  textPrimary: '#202124', // Contrast 16.1:1 trên #FFFFFF
+  textSecondary: '#5F6368', // Contrast 6.0:1 trên #FFFFFF (>= 4.5:1)
+  textTertiary: '#5F6368',
   textInverse: '#FFFFFF',
-  primary: '#0062CC', // Contrast 5.9:1 với #FFFFFF (Figma Blue #007AFF tinh chỉnh đạt chuẩn AA)
-  primaryPressed: '#004999',
-  primarySoft: '#E6F0FF',
-  separator: '#C6C6C8',
-  borderSubtle: '#E5E5EA',
-  borderFocus: '#0062CC',
-  success: '#1E7E34', // Contrast 5.1:1
-  successSoft: '#E8F7EC',
-  warning: '#B25000', // Contrast 5.0:1
-  warningSoft: '#FFF3E0',
-  danger: '#C91C14', // Contrast 6.1:1
-  dangerSoft: '#FDECEB',
-  info: '#0062CC',
-  infoSoft: '#EBF4FF',
-  overlayBackdrop: 'rgba(25, 26, 28, 0.45)',
+  primary: '#1A73E8', // Google Tasks Blue
+  primaryPressed: '#1557B0',
+  primarySoft: '#E8F0FE',
+  separator: '#DADCE0',
+  borderSubtle: '#DADCE0',
+  borderFocus: '#1A73E8',
+  success: '#1A73E8',
+  successSoft: '#E8F0FE',
+  warning: '#3C4043',
+  warningSoft: '#F1F3F4',
+  danger: '#D93025', // Google Red cho cảnh báo lỗi
+  dangerSoft: '#FCE8E6',
+  info: '#1A73E8',
+  infoSoft: '#E8F0FE',
+  overlayBackdrop: 'rgba(32, 33, 36, 0.45)',
   tabBarBg: '#FFFFFF',
-  tabBarActive: '#0062CC',
-  tabBarInactive: '#636366',
-  scopeBarBg: '#E5E5EA',
+  tabBarActive: '#1A73E8',
+  tabBarInactive: '#5F6368',
+  scopeBarBg: '#F1F3F4',
   scopeBarPill: '#FFFFFF',
-  offlineBannerBg: '#FFF3E0',
-  offlineBannerText: '#7A3400',
+  offlineBannerBg: '#F1F3F4',
+  offlineBannerText: '#202124',
   courseColors: {
-    blue: {
-      accent: '#0062CC',
-      softBg: '#EBF4FF',
-      border: '#B8D8FF',
-      text: '#004999',
-    },
-    indigo: {
-      accent: '#4845B5',
-      softBg: '#EFEFFD',
-      border: '#C5C4F7',
-      text: '#36348E',
-    },
-    purple: {
-      accent: '#8936B5',
-      softBg: '#F6ECFC',
-      border: '#DFBFF5',
-      text: '#6A248F',
-    },
-    teal: {
-      accent: '#006D85',
-      softBg: '#E6F7FA',
-      border: '#AEE4F0',
-      text: '#005266',
-    },
-    green: {
-      accent: '#1E7E34',
-      softBg: '#E8F7EC',
-      border: '#B4E3C0',
-      text: '#155D26',
-    },
-    orange: {
-      accent: '#B84A00',
-      softBg: '#FFF2E6',
-      border: '#FFD1A8',
-      text: '#8A3700',
-    },
-    pink: {
-      accent: '#C21847',
-      softBg: '#FCEBF0',
-      border: '#F7BBD0',
-      text: '#941035',
-    },
-    red: {
-      accent: '#C91C14',
-      softBg: '#FDECEB',
-      border: '#F8C1BD',
-      text: '#99130D',
-    },
+    blue: LIGHT_GOOGLE_TASK_COURSE_TOKEN,
+    indigo: LIGHT_NEUTRAL_TASK_COURSE_TOKEN,
+    purple: LIGHT_GOOGLE_TASK_COURSE_TOKEN,
+    teal: LIGHT_NEUTRAL_TASK_COURSE_TOKEN,
+    green: LIGHT_GOOGLE_TASK_COURSE_TOKEN,
+    orange: LIGHT_NEUTRAL_TASK_COURSE_TOKEN,
+    pink: LIGHT_GOOGLE_TASK_COURSE_TOKEN,
+    red: LIGHT_NEUTRAL_TASK_COURSE_TOKEN,
   },
 };
 
+const DARK_GOOGLE_TASK_COURSE_TOKEN: CourseColorToken = {
+  accent: '#8AB4F8',
+  softBg: '#1E3A5F',
+  border: '#3C4043',
+  text: '#D2E3FC',
+};
+
+const DARK_NEUTRAL_TASK_COURSE_TOKEN: CourseColorToken = {
+  accent: '#8AB4F8',
+  softBg: '#303134',
+  border: '#3C4043',
+  text: '#E8EAED',
+};
+
 /**
- * Bảng màu Dark Mode (Dựa trên Figma UI Kit Dark/* + chuẩn tương phản WCAG AA >= 4.5:1)
+ * Bảng màu Dark Mode chuẩn Google Tasks (Nền #202124 / #292A2D, Chữ #E8EAED / #9AA0A6, Google Blue #8AB4F8)
  */
 export const DARK_COLORS: AppThemeColors = {
-  backgroundPrimary: '#000000',
-  backgroundSecondary: '#1C1C1E',
-  backgroundTertiary: '#2C2C2E',
-  surfaceCard: '#1C1C1E',
-  surfaceElevated: '#2C2C2E',
-  textPrimary: '#FFFFFF', // Contrast 21:1 trên #000000, 16.5:1 trên #1C1C1E
-  textSecondary: '#D1D1D6', // Contrast 10.6:1 trên #1C1C1E (>= 4.5:1)
-  textTertiary: '#AEAEB2', // Contrast 7.2:1 trên #1C1C1E (>= 4.5:1)
-  textInverse: '#191A1C',
-  primary: '#409CFF', // Contrast 6.2:1 trên #1C1C1E
-  primaryPressed: '#0A84FF',
-  primarySoft: '#102A45',
-  separator: '#38383A',
-  borderSubtle: '#3A3A3C',
-  borderFocus: '#409CFF',
-  success: '#30D158',
-  successSoft: '#11331B',
-  warning: '#FFD60A',
-  warningSoft: '#362B07',
-  danger: '#FF6961',
-  dangerSoft: '#3B1615',
-  info: '#64D2FF',
-  infoSoft: '#0F2E3D',
+  backgroundPrimary: '#202124',
+  backgroundSecondary: '#292A2D',
+  backgroundTertiary: '#303134',
+  surfaceCard: '#292A2D',
+  surfaceElevated: '#303134',
+  textPrimary: '#E8EAED',
+  textSecondary: '#9AA0A6',
+  textTertiary: '#9AA0A6',
+  textInverse: '#202124',
+  primary: '#8AB4F8', // Google Tasks Dark Blue
+  primaryPressed: '#669DF6',
+  primarySoft: '#1E3A5F',
+  separator: '#3C4043',
+  borderSubtle: '#3C4043',
+  borderFocus: '#8AB4F8',
+  success: '#8AB4F8',
+  successSoft: '#1E3A5F',
+  warning: '#E8EAED',
+  warningSoft: '#303134',
+  danger: '#F28B82',
+  dangerSoft: '#3C2020',
+  info: '#8AB4F8',
+  infoSoft: '#1E3A5F',
   overlayBackdrop: 'rgba(0, 0, 0, 0.72)',
-  tabBarBg: '#1C1C1E',
-  tabBarActive: '#409CFF',
-  tabBarInactive: '#AEAEB2',
-  scopeBarBg: '#2C2C2E',
-  scopeBarPill: '#3A3A3C',
-  offlineBannerBg: '#362B07',
-  offlineBannerText: '#FFD60A',
+  tabBarBg: '#202124',
+  tabBarActive: '#8AB4F8',
+  tabBarInactive: '#9AA0A6',
+  scopeBarBg: '#303134',
+  scopeBarPill: '#3C4043',
+  offlineBannerBg: '#303134',
+  offlineBannerText: '#E8EAED',
   courseColors: {
-    blue: {
-      accent: '#409CFF',
-      softBg: '#122842',
-      border: '#1F4978',
-      text: '#82BFFF',
-    },
-    indigo: {
-      accent: '#7D7AFF',
-      softBg: '#1E1D42',
-      border: '#38367A',
-      text: '#B3B1FF',
-    },
-    purple: {
-      accent: '#CA78F5',
-      softBg: '#2E1A3B',
-      border: '#5A3273',
-      text: '#E2B3FA',
-    },
-    teal: {
-      accent: '#64D2FF',
-      softBg: '#112E3B',
-      border: '#20566E',
-      text: '#9EE2FF',
-    },
-    green: {
-      accent: '#30D158',
-      softBg: '#11331B',
-      border: '#206133',
-      text: '#7CE395',
-    },
-    orange: {
-      accent: '#FF9F0A',
-      softBg: '#382409',
-      border: '#6E4611',
-      text: '#FFC66E',
-    },
-    pink: {
-      accent: '#FF6482',
-      softBg: '#3B1520',
-      border: '#73293F',
-      text: '#FFA3B5',
-    },
-    red: {
-      accent: '#FF6961',
-      softBg: '#3B1615',
-      border: '#732B28',
-      text: '#FFA8A3',
-    },
+    blue: DARK_GOOGLE_TASK_COURSE_TOKEN,
+    indigo: DARK_NEUTRAL_TASK_COURSE_TOKEN,
+    purple: DARK_GOOGLE_TASK_COURSE_TOKEN,
+    teal: DARK_NEUTRAL_TASK_COURSE_TOKEN,
+    green: DARK_GOOGLE_TASK_COURSE_TOKEN,
+    orange: DARK_NEUTRAL_TASK_COURSE_TOKEN,
+    pink: DARK_GOOGLE_TASK_COURSE_TOKEN,
+    red: DARK_NEUTRAL_TASK_COURSE_TOKEN,
   },
 };
 
-/**
- * Thang Typography từ Figma UI Kit ("Typography" Frame)
- */
 export const TYPOGRAPHY = {
-  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: '800' as const, letterSpacing: 0.35 },
-  title1: { fontSize: 27, lineHeight: 32, fontWeight: '700' as const, letterSpacing: 0.35 },
-  title2: { fontSize: 22, lineHeight: 28, fontWeight: '700' as const, letterSpacing: 0.3 },
-  title3: { fontSize: 19, lineHeight: 24, fontWeight: '600' as const, letterSpacing: -0.3 },
-  headline: { fontSize: 17, lineHeight: 24, fontWeight: '600' as const, letterSpacing: -0.3 },
-  body: { fontSize: 17, lineHeight: 24, fontWeight: '400' as const, letterSpacing: -0.3 },
-  calloutSemibold: { fontSize: 16, lineHeight: 22, fontWeight: '600' as const, letterSpacing: -0.2 },
-  callout: { fontSize: 16, lineHeight: 22, fontWeight: '400' as const, letterSpacing: -0.2 },
-  subheadlineSemibold: { fontSize: 15, lineHeight: 20, fontWeight: '600' as const, letterSpacing: -0.2 },
-  subheadline: { fontSize: 15, lineHeight: 20, fontWeight: '400' as const, letterSpacing: -0.2 },
-  footnoteSemibold: { fontSize: 13, lineHeight: 18, fontWeight: '600' as const, letterSpacing: -0.08 },
-  footnote: { fontSize: 13, lineHeight: 18, fontWeight: '400' as const, letterSpacing: -0.08 },
+  largeTitle: { fontSize: 32, lineHeight: 40, fontWeight: '700' as const, letterSpacing: 0 },
+  title1: { fontSize: 24, lineHeight: 32, fontWeight: '600' as const, letterSpacing: 0 },
+  title2: { fontSize: 20, lineHeight: 28, fontWeight: '600' as const, letterSpacing: 0 },
+  title3: { fontSize: 18, lineHeight: 24, fontWeight: '600' as const, letterSpacing: 0 },
+  headline: { fontSize: 16, lineHeight: 24, fontWeight: '600' as const, letterSpacing: 0 },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' as const, letterSpacing: 0 },
+  calloutSemibold: { fontSize: 15, lineHeight: 22, fontWeight: '600' as const, letterSpacing: 0 },
+  callout: { fontSize: 15, lineHeight: 22, fontWeight: '400' as const, letterSpacing: 0 },
+  subheadlineSemibold: { fontSize: 14, lineHeight: 20, fontWeight: '600' as const, letterSpacing: 0 },
+  subheadline: { fontSize: 14, lineHeight: 20, fontWeight: '400' as const, letterSpacing: 0 },
+  footnoteSemibold: { fontSize: 13, lineHeight: 18, fontWeight: '600' as const, letterSpacing: 0 },
+  footnote: { fontSize: 13, lineHeight: 18, fontWeight: '400' as const, letterSpacing: 0 },
   captionSemibold: { fontSize: 12, lineHeight: 16, fontWeight: '600' as const, letterSpacing: 0 },
   caption: { fontSize: 12, lineHeight: 16, fontWeight: '400' as const, letterSpacing: 0 },
-  caption2Semibold: { fontSize: 11, lineHeight: 14, fontWeight: '600' as const, letterSpacing: 0.07 },
-  tabBar: { fontSize: 11, lineHeight: 13, fontWeight: '600' as const, letterSpacing: 0.1 },
+  caption2Semibold: { fontSize: 11, lineHeight: 14, fontWeight: '600' as const, letterSpacing: 0 },
+  tabBar: { fontSize: 13, lineHeight: 18, fontWeight: '600' as const, letterSpacing: 0 },
 };
 
-/**
- * Kích thước & Bo góc chuẩn từ Figma UI Kit
- * (.Field r=16, Button r=16, ViewCard-news r=16, TableHeader r=12, Date circle r=44)
- */
 export const SPACING = {
   xs: 4,
   sm: 8,
@@ -331,12 +274,6 @@ export function useAppTheme(): AppTheme {
 }
 
 export const COURSE_COLOR_OPTIONS: { key: CourseColorKey; label: string }[] = [
-  { key: 'blue', label: 'Xanh dương' },
-  { key: 'indigo', label: 'Chàm' },
-  { key: 'purple', label: 'Tím' },
-  { key: 'teal', label: 'Xanh ngọc' },
-  { key: 'green', label: 'Xanh lá' },
-  { key: 'orange', label: 'Cam' },
-  { key: 'pink', label: 'Hồng' },
-  { key: 'red', label: 'Đỏ' },
+  { key: 'blue', label: 'Xanh chuẩn' },
+  { key: 'indigo', label: 'Trung tính' },
 ];

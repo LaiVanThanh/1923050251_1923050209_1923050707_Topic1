@@ -144,7 +144,7 @@ describe('Authentication & Session Storage (Module 2)', () => {
 
       expect(result).toBe(false);
       const state = useAuthStore.getState();
-      expect(state.errorMessage).toContain('Máy chủ xác thực không phản hồi (500)');
+      expect(state.errorMessage).toContain('Máy chủ xác thực không phản hồi mã lỗi 500');
     });
 
     it('signIn đăng nhập thành công với tài khoản mẫu (sinhvien01@example.edu.vn)', async () => {

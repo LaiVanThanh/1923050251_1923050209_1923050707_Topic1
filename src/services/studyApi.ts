@@ -292,7 +292,7 @@ export async function flushOfflineMutationQueue(forceOnline?: boolean): Promise<
 function assertServerHealthy(): void {
   const { simulateServerError500 } = useNetworkSyncStore.getState();
   if (simulateServerError500) {
-    throw new Error('500 Internal Server Error: Máy chủ từ chối cập nhật (Giả lập lỗi 500 để kiểm chứng Rollback).');
+    throw new Error('500 Internal Server Error: Máy chủ từ chối cập nhật.');
   }
 }
 

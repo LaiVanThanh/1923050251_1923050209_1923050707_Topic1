@@ -1,12 +1,5 @@
 /**
- * Module 2 (Bước 2.1 & 2.2): Zustand Auth Store với Selectors
- * Quản lý 3 pha xác thực:
- * - 'hydrating' (đang đọc token từ SecureStore khi vừa mở app)
- * - 'authenticated' (đã đăng nhập hợp lệ)
- * - 'unauthenticated' (chưa đăng nhập hoặc đã đăng xuất)
- *
- * Trong signOut(), bắt buộc xóa sạch SecureStore đồng thời gọi queryClient.clear()
- * để kết thúc hoàn toàn phiên làm việc.
+ * Zustand Auth Store với Selectors
  */
 
 import { create } from 'zustand';
@@ -109,7 +102,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     if (!emailRegex.test(normalizedEmail)) {
       set({
         isSubmitting: false,
-        errorMessage: 'Email sinh viên không đúng định dạng (ví dụ: sinhvien01@example.edu.vn).',
+        errorMessage: 'Email sinh viên không đúng định dạng, ví dụ: sinhvien01@example.edu.vn.',
       });
       return false;
     }
@@ -117,16 +110,15 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
     if (!password || password.trim().length < 6) {
       set({
         isSubmitting: false,
-        errorMessage: 'Mật khẩu phải có tối thiểu 6 ký tự (theo chuẩn bảo mật).',
+        errorMessage: 'Mật khẩu phải có tối thiểu 6 ký tự.',
       });
       return false;
     }
 
-    // Hỗ trợ giả lập lỗi xác thực khi nhập mật khẩu 'error500' để kiểm thử trạng thái Error + Retry
     if (password.trim() === 'error500') {
       set({
         isSubmitting: false,
-        errorMessage: 'Máy chủ xác thực không phản hồi (500). Vui lòng bấm Thử lại.',
+        errorMessage: 'Máy chủ xác thực không phản hồi mã lỗi 500. Vui lòng bấm Thử lại.',
       });
       return false;
     }
@@ -136,7 +128,7 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
         id: `usr-${normalizedEmail.split('@')[0]}`,
         name:
           studentName?.trim() ||
-          `Sinh viên (${normalizedEmail.split('@')[0].toUpperCase()})`,
+          `Sinh viên ${normalizedEmail.split('@')[0].toUpperCase()}`,
         email: normalizedEmail,
         studentCode: normalizedEmail.split('@')[0],
         faculty: 'Khoa Công nghệ Thông tin',
@@ -184,9 +176,6 @@ export const useAuthStore = create<AuthStoreState>((set) => ({
   clearAuthError: () => set({ errorMessage: null }),
 }));
 
-/**
- * Selectors chuyên biệt theo đúng Bước 2.2
- */
 export const useAuthStatus = () => useAuthStore((s) => s.status);
 export const useCurrentUser = () => useAuthStore((s) => s.user);
 export const useAuthSubmitting = () => useAuthStore((s) => s.isSubmitting);

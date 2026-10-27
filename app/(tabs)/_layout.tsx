@@ -1,13 +1,10 @@
 /**
- * Filtered Figma Component: TabBar (UI kit -> TabBar, 375x78)
- * Gồm 2 tab trung tâm phục vụ đúng nghiệp vụ Study Planner:
- * 1. Lịch học & Bài tập (app/(tabs)/index.tsx)
- * 2. Môn học & Tiến độ (app/(tabs)/courses.tsx)
+ * Thanh điều hướng Tab tối giản kiểu Google Tasks (chỉ chữ, không dùng icon)
  */
 
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { MIN_TOUCH_TARGET, useAppTheme } from '../../src/theme/tokens';
 
 export default function TabsLayout() {
@@ -25,9 +22,12 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.tabBarBg,
           borderTopColor: colors.borderSubtle,
-          height: 68,
+          height: 56,
           paddingBottom: 8,
-          paddingTop: 6,
+          paddingTop: 8,
+        },
+        tabBarIconStyle: {
+          display: 'none',
         },
         tabBarActiveTintColor: colors.tabBarActive,
         tabBarInactiveTintColor: colors.tabBarInactive,
@@ -50,7 +50,7 @@ export default function TabsLayout() {
             ]}
           >
             <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
-              {isDark ? 'Light' : 'Dark'}
+              {isDark ? 'Sáng' : 'Tối'}
             </Text>
           </Pressable>
         ),
@@ -59,38 +59,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Kế hoạch & Lịch tuần',
-          tabBarLabel: 'Lịch & Bài tập',
+          title: 'Công việc học tập',
+          tabBarLabel: 'Lịch và Bài tập',
           tabBarAccessibilityLabel: 'tab-planner-btn',
-          tabBarIcon: ({ color }) => (
-            <View
-              style={{
-                width: 20,
-                height: 18,
-                borderRadius: 4,
-                borderWidth: 2,
-                borderColor: color,
-                alignItems: 'center',
-                paddingTop: 2,
-              }}
-            >
-              <View
-                style={{
-                  width: 14,
-                  height: 2,
-                  backgroundColor: color,
-                  marginBottom: 2,
-                }}
-              />
-              <View
-                style={{
-                  width: 10,
-                  height: 2,
-                  backgroundColor: color,
-                }}
-              />
-            </View>
-          ),
           headerLeft: () => (
             <Pressable
               testID="header-add-task-btn"
@@ -103,14 +74,14 @@ export default function TabsLayout() {
                   minHeight: MIN_TOUCH_TARGET,
                   minWidth: MIN_TOUCH_TARGET,
                   backgroundColor: colors.primary,
-                  borderRadius: radius.md,
+                  borderRadius: radius.pill,
                   paddingHorizontal: spacing.md,
                   marginLeft: spacing.md,
                 },
               ]}
             >
               <Text style={[typography.footnoteSemibold, { color: colors.textInverse }]}>
-                + Bài tập
+                Thêm bài tập
               </Text>
             </Pressable>
           ),
@@ -119,38 +90,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="courses"
         options={{
-          title: 'Môn học & Tiến độ',
-          tabBarLabel: 'Môn học & Hồ sơ',
+          title: 'Môn học và Tiến độ',
+          tabBarLabel: 'Môn học và Hồ sơ',
           tabBarAccessibilityLabel: 'tab-courses-btn',
-          tabBarIcon: ({ color }) => (
-            <View
-              style={{
-                width: 20,
-                height: 18,
-                borderRadius: 3,
-                borderWidth: 2,
-                borderColor: color,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <View
-                style={{
-                  width: 12,
-                  height: 2,
-                  backgroundColor: color,
-                  marginBottom: 3,
-                }}
-              />
-              <View
-                style={{
-                  width: 12,
-                  height: 2,
-                  backgroundColor: color,
-                }}
-              />
-            </View>
-          ),
         }}
       />
     </Tabs>

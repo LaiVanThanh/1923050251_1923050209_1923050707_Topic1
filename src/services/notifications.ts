@@ -1,10 +1,5 @@
 /**
- * Module 6 (Bước 6.1 & 6.2): Dịch Vụ Thông Báo Cục Bộ & Deep Linking (Expo Notifications)
- * "Deadline reminders as local notifications; tapping one opens that assignment's detail screen directly"
- * - Khi bài tập được tạo mới hoặc cập nhật hạn nộp dueAt, hệ thống tự động lập lịch thông báo cục bộ
- *   kèm gói dữ liệu data: { assignmentId: id, url: `/assignment/${id}` }.
- * - Nếu bài tập được đánh dấu hoàn thành hoặc xóa, tự động hủy thông báo đã đặt lịch.
- * - Tích hợp hàm "Gửi thông báo nhắc thử sau 5 giây" giúp nhóm demo trực tiếp trước giảng viên.
+ * Dịch Vụ Thông Báo Cục Bộ & Deep Linking (Expo Notifications)
  */
 
 import * as Notifications from 'expo-notifications';
@@ -64,9 +59,6 @@ export async function cancelScheduledReminder(notificationId?: string): Promise<
   }
 }
 
-/**
- * Đặt lịch thông báo nhắc hạn tự động trước hạn nộp (hoặc vào đúng hạn nộp nếu còn ít thời gian)
- */
 export async function scheduleAssignmentReminder(
   assignment: Assignment,
   courseName?: string
@@ -86,7 +78,6 @@ export async function scheduleAssignmentReminder(
 
   const dueMs = new Date(assignment.dueAt).getTime();
   const nowMs = Date.now();
-  // Nhắc trước 1 giờ, hoặc nếu hạn nộp gần hơn 1 giờ thì nhắc sau 10 giây
   const oneHourBefore = dueMs - 60 * 60 * 1000;
   const triggerSeconds = Math.max(
     10,
@@ -101,9 +92,9 @@ export async function scheduleAssignmentReminder(
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: `Sắp đến hạn: ${assignment.title}`,
-        body: `${courseName ? `[${courseName}] ` : ''}Hạn nộp: ${formatLocalDateTime(
+        body: `${courseName ? `${courseName} • ` : ''}Hạn nộp: ${formatLocalDateTime(
           assignment.dueAt
-        )}. Chạm để xem chi tiết!`,
+        )}. Chạm để xem chi tiết.`,
         data: {
           assignmentId: assignment.id,
           url: `/assignment/${assignment.id}`,
@@ -121,10 +112,6 @@ export async function scheduleAssignmentReminder(
   }
 }
 
-/**
- * Bước 6.2.1: Hàm "Gửi thông báo nhắc thử sau 5 giây" ngay trong màn hình chi tiết bài tập
- * Giúp nhóm demo trực tiếp cực nhanh trước giảng viên mà không phải chờ đến ngày mai.
- */
 export async function scheduleDemoReminderIn5Seconds(
   assignment: Assignment,
   courseName?: string
@@ -141,17 +128,17 @@ export async function scheduleDemoReminderIn5Seconds(
   if (!hasPermission) {
     return {
       scheduled: false,
-      message: 'Chưa được cấp quyền Thông báo (Notifications). Vui lòng bật quyền trong Cài đặt.',
+      message: 'Chưa được cấp quyền Thông báo. Vui lòng bật quyền trong Cài đặt.',
     };
   }
 
   try {
     const id = await Notifications.scheduleNotificationAsync({
       content: {
-        title: `⏰ Nhắc hạn bài tập: ${assignment.title}`,
-        body: `${courseName ? `[${courseName}] ` : ''}Hạn nộp ${formatLocalDateTime(
+        title: `Nhắc hạn bài tập: ${assignment.title}`,
+        body: `${courseName ? `${courseName} • ` : ''}Hạn nộp ${formatLocalDateTime(
           assignment.dueAt
-        )}. Chạm vào thông báo này để mở thẳng màn hình chi tiết!`,
+        )}. Chạm vào thông báo này để mở thẳng màn hình chi tiết.`,
         data: {
           assignmentId: assignment.id,
           url: `/assignment/${assignment.id}`,
@@ -167,7 +154,7 @@ export async function scheduleDemoReminderIn5Seconds(
     return {
       scheduled: true,
       notificationId: id,
-      message: 'Đã lên lịch thông báo nhắc thử sau 5 giây! Hãy chờ thông báo xuất hiện và chạm vào.',
+      message: 'Đã lên lịch thông báo nhắc thử sau 5 giây. Hãy chờ thông báo xuất hiện và chạm vào.',
     };
   } catch {
     return {

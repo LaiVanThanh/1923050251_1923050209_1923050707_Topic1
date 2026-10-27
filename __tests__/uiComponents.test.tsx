@@ -1,12 +1,5 @@
 /**
- * Test Suite: Accessible UI Components (Module 1, 4, 5)
- * Kiểm thử toàn diện:
- * 1. AccessibleButton: Label, role="button", các biến thể (primary/secondary/danger/outline),
- *    disabled (chặn press), loading indicator.
- * 2. ScreenStateView: Đủ 4 trạng thái bắt buộc (Loading, Error + Retry, Empty + Action, Content).
- * 3. DueNext48hWidget: Hiển thị số lượng, danh sách khẩn cấp, trạng thái 0 bài tập.
- * 4. AssignmentLessonCard: Cột giờ, tên môn, tiêu đề, nút đánh dấu checkbox, huy hiệu hạn nộp, chỉ báo ảnh.
- * 5. OfflineBanner: Ẩn khi online/hàng đợi rỗng, hiện khi mất mạng và hiện số thao tác chờ đồng bộ.
+ * Test Suite: Accessible UI Components
  */
 
 import { fireEvent, render, screen } from '@testing-library/react-native';
@@ -72,7 +65,7 @@ describe('UI Components Test Suite', () => {
     });
   });
 
-  describe('2. ScreenStateView (4 Trạng thái chuẩn)', () => {
+  describe('2. ScreenStateView', () => {
     it('hiển thị trạng thái Loading kèm loadingLabel khi isLoading={true}', () => {
       render(
         <ScreenStateView isLoading={true} isError={false} loadingLabel="Đang tải dữ liệu...">
@@ -132,7 +125,7 @@ describe('UI Components Test Suite', () => {
       expect(emptyActionMock).toHaveBeenCalledTimes(1);
     });
 
-    it('hiển thị Content (children) khi không loading, không error và không empty', () => {
+    it('hiển thị Content khi không loading, không error và không empty', () => {
       render(
         <ScreenStateView isLoading={false} isError={false} isEmpty={false}>
           <Text testID="actual-content">Nội dung sinh viên</Text>
@@ -228,14 +221,12 @@ describe('UI Components Test Suite', () => {
       expect(screen.getByText('PHY102')).toBeTruthy();
       expect(screen.getByText('Vật lý đại cương')).toBeTruthy();
       expect(screen.getByText('Báo cáo dao động con lắc')).toBeTruthy();
-      expect(screen.getByText('Ảnh đính kèm')).toBeTruthy();
+      expect(screen.getByText('Có ảnh đính kèm')).toBeTruthy();
 
-      // Bấm vào phần thân card -> gọi onPress
       const touchArea = screen.getByTestId('assignment-open-asg-card-1');
       fireEvent.press(touchArea);
       expect(onPressMock).toHaveBeenCalledWith('asg-card-1');
 
-      // Bấm vào checkbox hoàn thành -> gọi onToggleComplete
       const toggleArea = screen.getByTestId('assignment-toggle-asg-card-1');
       fireEvent.press(toggleArea);
       expect(onToggleMock).toHaveBeenCalledWith('asg-card-1');
@@ -255,7 +246,7 @@ describe('UI Components Test Suite', () => {
       expect(toJSON()).toBeNull();
     });
 
-    it('hiển thị biểu ngữ cảnh báo khi thiết bị ngoại tuyến (simulatedOffline=true)', () => {
+    it('hiển thị biểu ngữ cảnh báo khi thiết bị ngoại tuyến', () => {
       useNetworkSyncStore.getState().setSimulatedOffline(true);
       useNetworkSyncStore
         .getState()
@@ -264,7 +255,7 @@ describe('UI Components Test Suite', () => {
       render(<OfflineBanner />);
 
       expect(screen.getByTestId('offline-banner')).toBeTruthy();
-      expect(screen.getByText('Chế độ Ngoại tuyến (Offline Mode)')).toBeTruthy();
+      expect(screen.getByText('Chế độ ngoại tuyến')).toBeTruthy();
     });
 
     it('hiển thị số lượng thao tác đang chờ đồng bộ khi pendingMutationsCount > 0', () => {

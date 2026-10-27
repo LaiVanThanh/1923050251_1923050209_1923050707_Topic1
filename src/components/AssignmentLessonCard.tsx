@@ -1,11 +1,6 @@
 /**
- * Filtered Figma Component: LessonCard (UI kit -> LessonCard, 375x116)
- * Chuyển thể từ "Student Planner App (Community).fig":
- * - Cột trái (Time): Hiển thị giờ hạn nộp (HH:mm) và ngày ngắn gọn
- * - Cột phải (Description):
- *   + Nhãn Môn học in hoa (Caption2 Semibold 11/14) kèm chấm màu môn học
- *   + Tiêu đề bài tập (Footnote/Subheadline Semibold) + Nút đánh dấu hoàn thành (>= 44x44, Optimistic UI)
- *   + Huy hiệu thời hạn (Due Today, Due Tomorrow, Overdue, Completed) & chỉ báo có đính kèm ảnh/ghi chú
+ * AssignmentLessonCard — Phong cách danh sách công việc chuẩn Google Tasks
+ * Không dùng icon/ký tự đặc biệt, không dùng màu sắc lòe loẹt, không dùng ngoặc đơn.
  */
 
 import React from 'react';
@@ -35,23 +30,17 @@ export const AssignmentLessonCard: React.FC<AssignmentLessonCardProps> = ({
   onToggleComplete,
 }) => {
   const { colors, typography, spacing, radius } = useAppTheme();
-  const coursePalette = colors.courseColors[course?.colour ?? 'blue'];
   const badge = getDeadlineBadgeInfo(assignment.dueAt, assignment.status, now);
   const isCompleted = assignment.status === 'completed';
 
   const getBadgeColors = () => {
-    switch (badge.urgency) {
-      case 'completed':
-        return { bg: colors.successSoft, text: colors.success };
-      case 'overdue':
-        return { bg: colors.dangerSoft, text: colors.danger };
-      case 'dueToday':
-        return { bg: colors.warningSoft, text: colors.warning };
-      case 'dueTomorrow':
-        return { bg: colors.infoSoft, text: colors.info };
-      default:
-        return { bg: colors.backgroundSecondary, text: colors.textSecondary };
+    if (badge.urgency === 'overdue') {
+      return { bg: colors.dangerSoft, text: colors.danger };
     }
+    if (badge.urgency === 'completed' || badge.urgency === 'dueToday' || badge.urgency === 'dueTomorrow') {
+      return { bg: colors.primarySoft, text: colors.primary };
+    }
+    return { bg: colors.backgroundSecondary, text: colors.textSecondary };
   };
 
   const badgeColors = getBadgeColors();
@@ -64,143 +53,12 @@ export const AssignmentLessonCard: React.FC<AssignmentLessonCardProps> = ({
         {
           backgroundColor: colors.surfaceCard,
           borderColor: colors.borderSubtle,
-          borderRadius: radius.lg,
-          marginBottom: spacing.md,
+          borderRadius: radius.md,
+          marginBottom: spacing.sm,
         },
       ]}
     >
-      {/* Thanh dọc màu môn học chuẩn Figma LessonCard */}
-      <View
-        style={[
-          styles.courseAccentStrip,
-          {
-            backgroundColor: coursePalette.accent,
-            borderTopLeftRadius: radius.lg,
-            borderBottomLeftRadius: radius.lg,
-          },
-        ]}
-      />
-
-      <Pressable
-        testID={`assignment-open-${assignment.id}`}
-        accessibilityRole="button"
-        accessibilityLabel={`Mở chi tiết bài tập ${assignment.title}, môn ${
-          course?.name ?? 'Học phần'
-        }, trạng thái ${badge.label}`}
-        onPress={() => onPress(assignment.id)}
-        style={({ pressed }) => [
-          styles.mainTouchArea,
-          {
-            paddingVertical: spacing.md,
-            paddingLeft: spacing.md,
-            paddingRight: spacing.xs,
-            opacity: pressed ? 0.8 : 1,
-          },
-        ]}
-      >
-        {/* Cột Time (Figma LessonCard -> Frame "Time" 63x116) */}
-        <View
-          style={[
-            styles.timeColumn,
-            {
-              borderRightColor: colors.borderSubtle,
-              paddingRight: spacing.sm,
-              marginRight: spacing.md,
-            },
-          ]}
-        >
-          <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
-            {formatLocalTime(assignment.dueAt)}
-          </Text>
-          <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 2 }]}>
-            {formatLocalDateTime(assignment.dueAt).split(' · ')[0].slice(0, 5)}
-          </Text>
-          <View
-            style={[
-              styles.courseCodePill,
-              {
-                backgroundColor: coursePalette.softBg,
-                borderRadius: radius.sm,
-                marginTop: spacing.xs,
-                paddingHorizontal: 6,
-                paddingVertical: 2,
-              },
-            ]}
-          >
-            <Text style={[typography.caption2Semibold, { color: coursePalette.text }]}>
-              {course?.code ?? 'COURSE'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Cột Description (Figma LessonCard -> Frame "description") */}
-        <View style={styles.descriptionColumn}>
-          <Text
-            numberOfLines={1}
-            style={[
-              typography.caption2Semibold,
-              {
-                color: coursePalette.accent,
-                textTransform: 'uppercase',
-                marginBottom: 2,
-              },
-            ]}
-          >
-            {course?.name ?? 'Môn học học kỳ'}
-          </Text>
-
-          <Text
-            numberOfLines={2}
-            style={[
-              typography.subheadlineSemibold,
-              {
-                color: isCompleted ? colors.textTertiary : colors.textPrimary,
-                textDecorationLine: isCompleted ? 'line-through' : 'none',
-                marginBottom: spacing.xs,
-              },
-            ]}
-          >
-            {assignment.title}
-          </Text>
-
-          <View style={styles.metaFooterRow}>
-            <View
-              style={[
-                styles.badgePill,
-                {
-                  backgroundColor: badgeColors.bg,
-                  borderRadius: radius.sm,
-                  paddingHorizontal: spacing.sm,
-                  paddingVertical: 3,
-                },
-              ]}
-            >
-              <Text style={[typography.captionSemibold, { color: badgeColors.text }]}>
-                {badge.label}
-              </Text>
-            </View>
-
-            {assignment.photoUri && (
-              <View
-                style={[
-                  styles.badgePill,
-                  {
-                    backgroundColor: colors.primarySoft,
-                    borderRadius: radius.sm,
-                    paddingHorizontal: spacing.xs + 2,
-                    paddingVertical: 3,
-                    marginLeft: spacing.xs,
-                  },
-                ]}
-              >
-                <Text style={[typography.caption, { color: colors.primary }]}>Ảnh đính kèm</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </Pressable>
-
-      {/* Nút Indicator / Đánh dấu hoàn thành (>= 44x44 theo chuẩn Accessibility & Optimistic UI) */}
+      {/* Nút hoàn thành tròn tối giản kiểu Google Tasks ở bên trái hoặc bên phải (giữ vùng chạm >= 44x44) */}
       <Pressable
         testID={`assignment-toggle-${assignment.id}`}
         accessibilityRole="checkbox"
@@ -224,14 +82,127 @@ export const AssignmentLessonCard: React.FC<AssignmentLessonCardProps> = ({
           style={[
             styles.checkboxCircle,
             {
-              borderColor: isCompleted ? colors.success : colors.textTertiary,
-              backgroundColor: isCompleted ? colors.success : 'transparent',
+              borderColor: isCompleted ? colors.primary : colors.textSecondary,
+              backgroundColor: isCompleted ? colors.primary : 'transparent',
+            },
+          ]}
+        />
+      </Pressable>
+
+      <Pressable
+        testID={`assignment-open-${assignment.id}`}
+        accessibilityRole="button"
+        accessibilityLabel={`Mở chi tiết bài tập ${assignment.title}, môn ${
+          course?.name ?? 'Học phần'
+        }, trạng thái ${badge.label}`}
+        onPress={() => onPress(assignment.id)}
+        style={({ pressed }) => [
+          styles.mainTouchArea,
+          {
+            paddingVertical: spacing.md,
+            paddingRight: spacing.md,
+            opacity: pressed ? 0.8 : 1,
+          },
+        ]}
+      >
+        <View
+          style={[
+            styles.timeColumn,
+            {
+              borderRightColor: colors.borderSubtle,
+              paddingRight: spacing.sm,
+              marginRight: spacing.md,
             },
           ]}
         >
-          {isCompleted && (
-            <Text style={[typography.captionSemibold, { color: colors.textInverse }]}>✓</Text>
-          )}
+          <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
+            {formatLocalTime(assignment.dueAt)}
+          </Text>
+          <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 2 }]}>
+            {formatLocalDateTime(assignment.dueAt).split(' · ')[0].slice(0, 5)}
+          </Text>
+          <View
+            style={[
+              styles.courseCodePill,
+              {
+                backgroundColor: colors.backgroundSecondary,
+                borderRadius: radius.sm,
+                marginTop: spacing.xs,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+              },
+            ]}
+          >
+            <Text style={[typography.caption2Semibold, { color: colors.textSecondary }]}>
+              {course?.code ?? 'COURSE'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.descriptionColumn}>
+          <Text
+            numberOfLines={1}
+            style={[
+              typography.captionSemibold,
+              {
+                color: colors.textSecondary,
+                marginBottom: 2,
+              },
+            ]}
+          >
+            {course?.name ?? 'Môn học học kỳ'}
+          </Text>
+
+          <Text
+            numberOfLines={2}
+            style={[
+              typography.subheadlineSemibold,
+              {
+                color: isCompleted ? colors.textSecondary : colors.textPrimary,
+                textDecorationLine: isCompleted ? 'line-through' : 'none',
+                marginBottom: spacing.xs,
+              },
+            ]}
+          >
+            {assignment.title}
+          </Text>
+
+          <View style={styles.metaFooterRow}>
+            <View
+              style={[
+                styles.badgePill,
+                {
+                  backgroundColor: badgeColors.bg,
+                  borderRadius: radius.pill,
+                  paddingHorizontal: spacing.sm,
+                  paddingVertical: 3,
+                },
+              ]}
+            >
+              <Text style={[typography.captionSemibold, { color: badgeColors.text }]}>
+                {badge.label}
+              </Text>
+            </View>
+
+            {assignment.photoUri && (
+              <View
+                style={[
+                  styles.badgePill,
+                  {
+                    backgroundColor: colors.backgroundSecondary,
+                    borderRadius: radius.pill,
+                    paddingHorizontal: spacing.sm,
+                    paddingVertical: 3,
+                    marginLeft: spacing.xs,
+                  },
+                ]}
+              >
+                <Text style={[typography.caption, { color: colors.textSecondary }]}>
+                  Có ảnh đính kèm
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </Pressable>
     </View>
@@ -245,17 +216,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  courseAccentStrip: {
-    width: 5,
-    alignSelf: 'stretch',
-  },
   mainTouchArea: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   timeColumn: {
-    width: 72,
+    width: 68,
     borderRightWidth: 1,
     alignItems: 'flex-start',
     justifyContent: 'center',
@@ -281,9 +248,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   checkboxCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',

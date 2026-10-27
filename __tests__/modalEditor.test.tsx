@@ -1,10 +1,5 @@
 /**
- * Test Suite: Modal Editor Route (app/modal/editor.tsx — Module 3)
- * Kiểm thử toàn diện:
- * 1. Chuyển đổi qua lại giữa chế độ Thêm Bài tập (Assignment) và Thêm Môn học (Course).
- * 2. Validation lỗi khi để trống tiêu đề bài tập hoặc mã học phần / tên môn học.
- * 3. Thao tác chọn môn học và chọn phím tắt hạn nộp (Deadline Presets).
- * 4. Gọi mutation tạo bài tập và tạo môn học thành công.
+ * Test Suite: Modal Editor Route (app/modal/editor.tsx)
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -42,7 +37,7 @@ const MOCK_COURSES: Course[] = [
   },
 ];
 
-describe('Modal Editor Screen (app/modal/editor.tsx)', () => {
+describe('Modal Editor Screen', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -66,13 +61,11 @@ describe('Modal Editor Screen (app/modal/editor.tsx)', () => {
       </QueryClientProvider>
     );
 
-    // Mặc định ban đầu ở form bài tập
     await waitFor(() => {
       expect(screen.getByTestId('assignment-editor-form')).toBeTruthy();
       expect(screen.queryByTestId('course-editor-form')).toBeNull();
     });
 
-    // Chuyển sang form môn học
     const courseModeBtn = screen.getByTestId('editor-mode-course');
     fireEvent.press(courseModeBtn);
 
@@ -102,7 +95,7 @@ describe('Modal Editor Screen (app/modal/editor.tsx)', () => {
     expect(mockBack).not.toHaveBeenCalled();
   });
 
-  it('lưu bài tập thành công và gọi router.back() khi nhập tiêu đề hợp lệ', async () => {
+  it('lưu bài tập thành công và gọi router.back khi nhập tiêu đề hợp lệ', async () => {
     const createAsgSpy = jest
       .spyOn(studyApi, 'createAssignmentApi')
       .mockResolvedValue({
@@ -123,11 +116,9 @@ describe('Modal Editor Screen (app/modal/editor.tsx)', () => {
       expect(screen.getByTestId('assignment-title-input')).toBeTruthy();
     });
 
-    // Nhập tiêu đề bài tập
     const titleInput = screen.getByTestId('assignment-title-input');
     fireEvent.changeText(titleInput, 'Làm bài tập số 1');
 
-    // Bấm nút Lưu bài tập
     const saveBtn = screen.getByTestId('save-assignment-btn');
     fireEvent.press(saveBtn);
 
@@ -155,7 +146,7 @@ describe('Modal Editor Screen (app/modal/editor.tsx)', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('Vui lòng nhập mã học phần (VD: MAT101).')
+        screen.getByText('Vui lòng nhập mã học phần.')
       ).toBeTruthy();
     });
     expect(mockBack).not.toHaveBeenCalled();

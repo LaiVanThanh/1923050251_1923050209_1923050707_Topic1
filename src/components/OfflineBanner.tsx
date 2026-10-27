@@ -1,9 +1,5 @@
 /**
- * Module 5 (Bước 5.3): OfflineBanner & Rollback Alert Banner
- * "Works offline: the last successful load is shown with a visible banner,
- *  and edits made offline are not silently lost"
- * Hiển thị dải băng cảnh báo rõ ràng ở đầu ứng dụng khi mất mạng kèm thời gian
- * của lần tải thành công cuối cùng (lastSyncedAt) và số thao tác đang xếp hàng đồng bộ.
+ * OfflineBanner & Rollback Alert Banner — Không dùng icon, không dùng ngoặc đơn
  */
 
 import React from 'react';
@@ -42,8 +38,8 @@ export const OfflineBanner: React.FC = () => {
             styles.bannerBox,
             {
               backgroundColor: colors.offlineBannerBg,
-              borderColor: colors.warning,
-              borderRadius: radius.md,
+              borderColor: colors.borderSubtle,
+              borderRadius: radius.sm,
               paddingHorizontal: spacing.md,
               paddingVertical: spacing.sm,
               marginBottom: spacing.xs,
@@ -52,9 +48,9 @@ export const OfflineBanner: React.FC = () => {
         >
           <View style={styles.textColumn}>
             <Text style={[typography.footnoteSemibold, { color: colors.offlineBannerText }]}>
-              Chế độ Ngoại tuyến (Offline Mode)
+              Chế độ ngoại tuyến
             </Text>
-            <Text style={[typography.caption, { color: colors.offlineBannerText, marginTop: 2 }]}>
+            <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 2 }]}>
               {lastSyncedAt
                 ? `Lần tải thành công cuối: ${formatLocalDateTime(lastSyncedAt)}`
                 : 'Đang hiển thị bộ nhớ đệm cục bộ.'}
@@ -94,7 +90,7 @@ export const OfflineBanner: React.FC = () => {
             {
               backgroundColor: colors.dangerSoft,
               borderColor: colors.danger,
-              borderRadius: radius.md,
+              borderRadius: radius.sm,
               paddingHorizontal: spacing.md,
               paddingVertical: spacing.sm,
               marginBottom: spacing.xs,
@@ -103,7 +99,7 @@ export const OfflineBanner: React.FC = () => {
         >
           <View style={styles.textColumn}>
             <Text style={[typography.footnoteSemibold, { color: colors.danger }]}>
-              ⚠️ Optimistic Rollback đã kích hoạt
+              Đã khôi phục trạng thái ban đầu
             </Text>
             <Text style={[typography.caption, { color: colors.textPrimary, marginTop: 2 }]}>
               {rollbackErrorBanner}

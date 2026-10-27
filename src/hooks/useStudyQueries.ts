@@ -1,11 +1,5 @@
 /**
- * Module 3 (Bước 3.2) & Module 5 (Bước 5.2): TanStack Query Hooks & Optimistic Updates
- * - Cung cấp đầy đủ các hooks:
- *   useCoursesQuery(), useAssignmentsQuery(),
- *   useCreateCourseMutation(), useUpdateCourseMutation(),
- *   useCreateAssignmentMutation(), useUpdateAssignmentMutation(),
- *   useToggleCompleteMutation() (Optimistic Update + Rollback khi lỗi),
- *   useDeleteAssignmentMutation().
+ * TanStack Query Hooks & Optimistic Updates
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -144,14 +138,6 @@ interface ToggleCompleteContext {
   previousAssignments?: Assignment[];
 }
 
-/**
- * Bước 5.2.2: Hook useToggleCompleteMutation() theo chuẩn TanStack Query Optimistic Updates:
- * - Trong onMutate: Gọi queryClient.cancelQueries, lưu previousAssignments,
- *   đổi ngay trạng thái bài tập sang 'completed' (hoặc nextStatus).
- * - Trong onError: Khôi phục queryClient.setQueryData(['assignments'], context.previousAssignments)
- *   và báo lỗi rõ ràng.
- * - Trong onSettled: Làm mới lại dữ liệu khi có kết nối mạng.
- */
 export function useToggleCompleteMutation() {
   const qc = useQueryClient();
   const setRollbackErrorBanner = useOptimisticFeedbackStore((s) => s.setRollbackErrorBanner);
@@ -194,7 +180,7 @@ export function useToggleCompleteMutation() {
         })
       );
 
-      setLastOptimisticMessage('Đã cập nhật trạng thái tức thì (Optimistic UI)');
+      setLastOptimisticMessage('Đã cập nhật trạng thái tức thì');
       return { previousAssignments };
     },
 
@@ -204,7 +190,7 @@ export function useToggleCompleteMutation() {
       }
       setLastOptimisticMessage(null);
       setRollbackErrorBanner(
-        `Đã khôi phục (Rollback) trạng thái cũ do lỗi máy chủ: ${error.message}`
+        `Đã khôi phục trạng thái cũ do lỗi máy chủ: ${error.message}`
       );
     },
 

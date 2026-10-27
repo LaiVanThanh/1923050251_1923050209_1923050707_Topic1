@@ -1,12 +1,6 @@
 /**
- * Module 3 (Bước 3.3) & Module 2 (Bước 2.4):
- * Màn hình Môn học & Thống kê Tiến độ Động — app/(tabs)/courses.tsx (Màn hình 2/5+)
- * Giao diện lọc & chuyển thể từ "Student Planner App (Community).fig":
- * - Màn hình "1.3. Academic items", "1.2. Academic semesters" & "1. Profile"
- * - Hiển thị danh sách 5–7 môn học kèm thanh tiến độ trực quan (Completed vs. Outstanding)
- *   lấy từ hàm computeCourseProgress(courses, assignments) (computed, never stored).
- * - Tích hợp thẻ Hồ sơ Sinh viên, nút Sign Out (xóa sạch SecureStore + queryClient.clear()),
- *   bộ chuyển đổi Light/Dark mode và bảng điều khiển kiểm thử Offline / Lỗi 500.
+ * Màn hình Môn học và Tiến độ — app/(tabs)/courses.tsx
+ * Tông màu và bố cục tối giản chuẩn Google Tasks, không dùng icon, không dùng ngoặc đơn.
  */
 
 import { onlineManager } from '@tanstack/react-query';
@@ -66,7 +60,6 @@ export default function CoursesAndProgressScreen() {
   const isError = coursesQuery.isError || assignmentsQuery.isError;
   const isEmpty = !isLoading && !isError && courses.length === 0;
 
-  // Tính toán tiến độ động mỗi lần render (computed, never stored)
   const courseProgressList = computeCourseProgress(courses, assignments);
   const overall = computeOverallProgress(courses, assignments);
 
@@ -90,9 +83,7 @@ export default function CoursesAndProgressScreen() {
         paddingBottom: spacing.xxxl,
       }}
     >
-      {/* =====================================================================
-          THẺ TỔNG QUAN TIẾN ĐỘ HỌC KỲ (Computed Progress Summary)
-         ===================================================================== */}
+      {/* THẺ TỔNG QUAN TIẾN ĐỘ HỌC KỲ */}
       <View
         testID="overall-progress-card"
         style={[
@@ -100,14 +91,14 @@ export default function CoursesAndProgressScreen() {
           {
             backgroundColor: colors.surfaceElevated,
             borderColor: colors.borderSubtle,
-            borderRadius: radius.lg,
+            borderRadius: radius.md,
             padding: spacing.lg,
             marginBottom: spacing.lg,
           },
         ]}
       >
         <Text style={[typography.caption2Semibold, { color: colors.primary }]}>
-          THỐNG KÊ TIẾN ĐỘ ĐỘNG (COMPUTED, NEVER STORED)
+          THỐNG KÊ TIẾN ĐỘ HỌC KỲ
         </Text>
         <View style={[styles.overallNumbersRow, { marginTop: spacing.xs }]}>
           <View>
@@ -123,37 +114,36 @@ export default function CoursesAndProgressScreen() {
               style={[
                 styles.counterBadge,
                 {
-                  backgroundColor: colors.successSoft,
-                  borderRadius: radius.md,
+                  backgroundColor: colors.primarySoft,
+                  borderRadius: radius.sm,
                   paddingHorizontal: spacing.md,
                   paddingVertical: spacing.xs,
                 },
               ]}
             >
-              <Text style={[typography.captionSemibold, { color: colors.success }]}>
-                Completed: {overall.completedAssignments}
+              <Text style={[typography.captionSemibold, { color: colors.primary }]}>
+                Đã xong: {overall.completedAssignments}
               </Text>
             </View>
             <View
               style={[
                 styles.counterBadge,
                 {
-                  backgroundColor: colors.warningSoft,
-                  borderRadius: radius.md,
+                  backgroundColor: colors.backgroundTertiary,
+                  borderRadius: radius.sm,
                   paddingHorizontal: spacing.md,
                   paddingVertical: spacing.xs,
                   marginTop: spacing.xs,
                 },
               ]}
             >
-              <Text style={[typography.captionSemibold, { color: colors.warning }]}>
-                Outstanding: {overall.outstandingAssignments}
+              <Text style={[typography.captionSemibold, { color: colors.textSecondary }]}>
+                Đang chờ: {overall.outstandingAssignments}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Thanh tiến độ tổng thể */}
         <View
           style={[
             styles.progressTrack,
@@ -177,16 +167,14 @@ export default function CoursesAndProgressScreen() {
         </View>
       </View>
 
-      {/* =====================================================================
-          DANH SÁCH MÔN HỌC & THANH TIẾN ĐỘ TỪNG MÔN (Figma 1.3. Academic items)
-         ===================================================================== */}
+      {/* DANH SÁCH MÔN HỌC VÀ TIẾN ĐỘ TỪNG MÔN */}
       <View style={[styles.sectionHeaderRow, { marginBottom: spacing.sm }]}>
         <Text style={[typography.title3, { color: colors.textPrimary }]}>
-          Danh sách Môn học ({courses.length})
+          Danh sách môn học • {courses.length}
         </Text>
         <AccessibleButton
           testID="add-course-button"
-          label="+ Thêm môn học"
+          label="Thêm môn học"
           accessibilityLabel="Thêm môn học mới"
           variant="outline"
           onPress={() =>
@@ -209,7 +197,7 @@ export default function CoursesAndProgressScreen() {
         }}
         isEmpty={isEmpty}
         emptyTitle="Chưa có môn học nào"
-        emptyMessage="Hãy thêm từ 5 đến 7 môn học trong học kỳ để bắt đầu quản lý bài tập."
+        emptyMessage="Hãy thêm các môn học trong học kỳ để bắt đầu quản lý bài tập."
         emptyActionLabel="Thêm môn học đầu tiên"
         onEmptyAction={() =>
           router.push({ pathname: '/modal/editor', params: { mode: 'course' } })
@@ -217,7 +205,6 @@ export default function CoursesAndProgressScreen() {
       >
         {courseProgressList.map((item) => {
           const courseObj = courses.find((c) => c.id === item.courseId);
-          const palette = colors.courseColors[item.colour];
 
           return (
             <View
@@ -228,7 +215,7 @@ export default function CoursesAndProgressScreen() {
                 {
                   backgroundColor: colors.surfaceCard,
                   borderColor: colors.borderSubtle,
-                  borderRadius: radius.lg,
+                  borderRadius: radius.md,
                   padding: spacing.lg,
                   marginBottom: spacing.md,
                 },
@@ -240,15 +227,15 @@ export default function CoursesAndProgressScreen() {
                     style={[
                       styles.codeBadge,
                       {
-                        backgroundColor: palette.softBg,
-                        borderColor: palette.border,
+                        backgroundColor: colors.primarySoft,
+                        borderColor: colors.borderSubtle,
                         borderRadius: radius.sm,
                         paddingHorizontal: spacing.sm,
                         paddingVertical: 3,
                       },
                     ]}
                   >
-                    <Text style={[typography.captionSemibold, { color: palette.text }]}>
+                    <Text style={[typography.captionSemibold, { color: colors.primary }]}>
                       {item.courseCode}
                     </Text>
                   </View>
@@ -267,7 +254,7 @@ export default function CoursesAndProgressScreen() {
                         { color: colors.textSecondary, marginTop: 2 },
                       ]}
                     >
-                      {courseObj?.instructor ?? 'GV. Học phần'} • {courseObj?.room ?? 'Phòng học'}
+                      {courseObj?.instructor ?? 'Giảng viên'} • {courseObj?.room ?? 'Phòng học'}
                     </Text>
                   )}
                 </View>
@@ -275,19 +262,18 @@ export default function CoursesAndProgressScreen() {
                 <View style={styles.percentageBox}>
                   <Text
                     testID={`course-percentage-${item.courseId}`}
-                    style={[typography.title2, { color: palette.accent }]}
+                    style={[typography.title2, { color: colors.primary }]}
                   >
                     {item.percentage}%
                   </Text>
                 </View>
               </View>
 
-              {/* Thanh tiến độ động Completed vs. Outstanding */}
               <View
                 style={[
                   styles.progressTrack,
                   {
-                    backgroundColor: colors.backgroundSecondary,
+                    backgroundColor: colors.backgroundTertiary,
                     borderRadius: radius.pill,
                     marginVertical: spacing.md,
                   },
@@ -298,7 +284,7 @@ export default function CoursesAndProgressScreen() {
                     styles.progressFill,
                     {
                       width: `${item.percentage}%`,
-                      backgroundColor: palette.accent,
+                      backgroundColor: colors.primary,
                       borderRadius: radius.pill,
                     },
                   ]}
@@ -309,18 +295,18 @@ export default function CoursesAndProgressScreen() {
                 <View style={styles.statsRow}>
                   <Text
                     testID={`course-completed-${item.courseId}`}
-                    style={[typography.footnoteSemibold, { color: colors.success }]}
+                    style={[typography.footnoteSemibold, { color: colors.primary }]}
                   >
-                    ✓ Đã xong: {item.completed}
+                    Đã xong: {item.completed}
                   </Text>
                   <Text
                     testID={`course-outstanding-${item.courseId}`}
                     style={[
                       typography.footnoteSemibold,
-                      { color: colors.warning, marginLeft: spacing.md },
+                      { color: colors.textSecondary, marginLeft: spacing.md },
                     ]}
                   >
-                    ⏳ Tồn đọng: {item.outstanding}
+                    Tồn đọng: {item.outstanding}
                   </Text>
                 </View>
 
@@ -362,13 +348,13 @@ export default function CoursesAndProgressScreen() {
                       {
                         minHeight: MIN_TOUCH_TARGET,
                         minWidth: MIN_TOUCH_TARGET,
-                        backgroundColor: palette.softBg,
+                        backgroundColor: colors.primarySoft,
                         borderRadius: radius.sm,
                         paddingHorizontal: spacing.sm + 2,
                       },
                     ]}
                   >
-                    <Text style={[typography.captionSemibold, { color: palette.text }]}>
+                    <Text style={[typography.captionSemibold, { color: colors.primary }]}>
                       Sửa môn
                     </Text>
                   </Pressable>
@@ -379,23 +365,21 @@ export default function CoursesAndProgressScreen() {
         })}
       </ScreenStateView>
 
-      {/* =====================================================================
-          THẺ HỒ SƠ SINH VIÊN, THEME TOKENS & KIỂM THỬ OFFLINE/ROLLBACK (Figma 1. Profile)
-         ===================================================================== */}
+      {/* THẺ HỒ SƠ SINH VIÊN VÀ BẢNG ĐIỀU KHIỂN */}
       <View
         style={[
           styles.profileCard,
           {
             backgroundColor: colors.surfaceCard,
             borderColor: colors.borderSubtle,
-            borderRadius: radius.lg,
+            borderRadius: radius.md,
             padding: spacing.lg,
             marginTop: spacing.lg,
           },
         ]}
       >
         <Text style={[typography.caption2Semibold, { color: colors.primary }]}>
-          HỒ SƠ SINH VIÊN & BẢO MẬT PHIÊN (EXPO SECURESTORE)
+          HỒ SƠ SINH VIÊN VÀ BẢO MẬT PHIÊN
         </Text>
         <Text style={[typography.title3, { color: colors.textPrimary, marginTop: 4 }]}>
           {currentUser?.name ?? 'Nguyễn Văn A'}
@@ -407,14 +391,13 @@ export default function CoursesAndProgressScreen() {
           {currentUser?.faculty ?? 'Khoa Công nghệ Thông tin'}
         </Text>
 
-        {/* Bộ chọn chế độ màu Light / Dark / System từ 1 file tokens.ts */}
         <Text
           style={[
             typography.captionSemibold,
             { color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
           ]}
         >
-          CHẾ ĐỘ GIAO DIỆN (TỪ 1 FILE TOKENS.TS DUY NHẤT):
+          CHẾ ĐỘ GIAO DIỆN:
         </Text>
         <View style={styles.themeRow}>
           {(['light', 'dark', 'system'] as const).map((mode) => {
@@ -433,7 +416,7 @@ export default function CoursesAndProgressScreen() {
                   {
                     minHeight: MIN_TOUCH_TARGET,
                     backgroundColor: active ? colors.primary : colors.backgroundSecondary,
-                    borderRadius: radius.md,
+                    borderRadius: radius.sm,
                   },
                 ]}
               >
@@ -450,22 +433,21 @@ export default function CoursesAndProgressScreen() {
           })}
         </View>
 
-        {/* Bảng điều khiển Demo Bảo vệ: Giả lập Mất mạng (Offline) & Giả lập lỗi Server 500 */}
         <Text
           style={[
             typography.captionSemibold,
             { color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
           ]}
         >
-          BẢNG ĐIỀU KHIỂN DEMO BẢO VỆ (OFFLINE & OPTIMISTIC ROLLBACK):
+          KIỂM THỬ MẠNG VÀ ĐỒNG BỘ:
         </Text>
         <View style={styles.demoLabButtons}>
           <AccessibleButton
             testID="toggle-offline-mode-btn"
             label={
               simulatedOffline
-                ? 'Đang bật chế độ Offline (Bấm để Online)'
-                : 'Bật giả lập Offline Mode (Mất mạng)'
+                ? 'Đang bật chế độ ngoại tuyến • Bấm để kết nối lại'
+                : 'Bật giả lập chế độ ngoại tuyến'
             }
             variant={simulatedOffline ? 'outline' : 'secondary'}
             onPress={handleToggleOfflineSimulation}
@@ -474,8 +456,8 @@ export default function CoursesAndProgressScreen() {
             testID="toggle-server-500-btn"
             label={
               simulateServerError500
-                ? 'Đang bật Giả lập Lỗi 500 (Test Rollback)'
-                : 'Bật giả lập Lỗi Server 500 (Test Rollback)'
+                ? 'Đang bật giả lập lỗi máy chủ 500'
+                : 'Bật giả lập lỗi máy chủ 500'
             }
             variant={simulateServerError500 ? 'danger' : 'secondary'}
             onPress={() => {
@@ -489,10 +471,9 @@ export default function CoursesAndProgressScreen() {
           />
         </View>
 
-        {/* Nút Sign Out bắt buộc xóa sạch SecureStore & queryClient.clear() */}
         <AccessibleButton
           testID="sign-out-button"
-          label="Đăng xuất (Sign Out & Xóa SecureStore)"
+          label="Đăng xuất tài khoản"
           accessibilityLabel="Đăng xuất hoàn toàn khỏi ứng dụng"
           variant="danger"
           onPress={handleSignOut}
@@ -522,7 +503,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   progressTrack: {
-    height: 10,
+    height: 8,
     width: '100%',
     overflow: 'hidden',
   },

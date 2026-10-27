@@ -1,13 +1,6 @@
 /**
- * Module 5 (Bước 5.3.2) & Module 6 (Bước 6.2.1):
- * Màn hình Chi tiết Bài tập — app/assignment/[id].tsx (Màn hình 5/5+ — Dynamic Route)
- * Giao diện lọc & chuyển thể từ "Student Planner App (Community).fig":
- * - Màn hình "1.1. Open Subject", "2.1. Open Notes" & "3.1. Add file" / "3.2. Added file"
- * - Hiển thị toàn bộ thông tin chi tiết của bài tập [id], tiến độ môn học liên kết.
- * - Nút đánh dấu Hoàn thành (Optimistic UI kèm Rollback tự động khi gặp lỗi 500).
- * - Khu vực Đính kèm / Xem ảnh chụp ghi chú viết tay hoặc bảng trắng (expo-image-picker).
- * - Khu vực Nhắc hạn Thông báo Cục bộ kèm nút "Gửi thông báo nhắc thử sau 5 giây".
- * - Xử lý đủ 4 trạng thái qua ScreenStateView.
+ * Màn hình Chi tiết Bài tập — app/assignment/[id].tsx
+ * Phong cách tối giản Google Tasks, không dùng icon, không dùng ngoặc đơn.
  */
 
 import * as ImagePicker from 'expo-image-picker';
@@ -42,7 +35,6 @@ import {
 } from '../../src/utils/dateUtils';
 import { computeCourseProgress } from '../../src/utils/progressSelector';
 
-// Ảnh SVG data URI mô phỏng bảng trắng / ghi chú viết tay dùng khi chạy trên máy ảo không có camera
 const SAMPLE_WHITEBOARD_DATA_URI =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
@@ -74,7 +66,6 @@ export default function AssignmentDetailScreen() {
   const isError = coursesQuery.isError || assignmentsQuery.isError;
   const isEmpty = !isLoading && !isError && !assignment;
 
-  // Tiến độ động của môn học chứa bài tập này
   const courseProgress = computeCourseProgress(courses, assignments).find(
     (p) => p.courseId === assignment?.courseId
   );
@@ -108,7 +99,7 @@ export default function AssignmentDetailScreen() {
           id: assignment.id,
           photoUri: result.assets[0].uri,
         });
-        setPhotoFeedback('Đã đính kèm ảnh chụp ghi chú từ thư viện thành công!');
+        setPhotoFeedback('Đã đính kèm ảnh chụp ghi chú từ thư viện thành công.');
       }
     } catch {
       setPhotoFeedback('Không thể mở thư viện ảnh trên thiết bị này.');
@@ -135,10 +126,10 @@ export default function AssignmentDetailScreen() {
           id: assignment.id,
           photoUri: result.assets[0].uri,
         });
-        setPhotoFeedback('Đã chụp và đính kèm ảnh bảng trắng/ghi chú thành công!');
+        setPhotoFeedback('Đã chụp và đính kèm ảnh ghi chú thành công.');
       }
     } catch {
-      setPhotoFeedback('Thiết bị/máy ảo không hỗ trợ Camera trực tiếp.');
+      setPhotoFeedback('Thiết bị không hỗ trợ Camera trực tiếp.');
     }
   };
 
@@ -150,7 +141,7 @@ export default function AssignmentDetailScreen() {
         id: assignment.id,
         photoUri: SAMPLE_WHITEBOARD_DATA_URI,
       });
-      setPhotoFeedback('Đã đính kèm ảnh ghi chú bảng trắng mẫu thành công!');
+      setPhotoFeedback('Đã đính kèm ảnh ghi chú bảng trắng mẫu thành công.');
     } catch {
       setPhotoFeedback('Không thể đính kèm ảnh khi đang gặp lỗi máy chủ.');
     }
@@ -184,11 +175,11 @@ export default function AssignmentDetailScreen() {
         notificationId: notifId,
       });
       setNotificationFeedback(
-        `Đã lập lịch thông báo nhắc hạn tự động (Mã lịch: ${notifId.slice(0, 8)}).`
+        `Đã lập lịch thông báo nhắc hạn tự động • Mã lịch: ${notifId.slice(0, 8)}.`
       );
     } else {
       setNotificationFeedback(
-        'Đã ghi nhận cấu hình nhắc hạn (hoặc bài tập đã hoàn thành / quá hạn).'
+        'Đã ghi nhận cấu hình nhắc hạn cho bài tập.'
       );
     }
   };
@@ -202,7 +193,6 @@ export default function AssignmentDetailScreen() {
     router.back();
   };
 
-  const palette = colors.courseColors[course?.colour ?? 'blue'];
   const deadlineInfo = assignment
     ? getDeadlineBadgeInfo(assignment.dueAt, assignment.status)
     : null;
@@ -237,16 +227,13 @@ export default function AssignmentDetailScreen() {
       >
         {assignment && (
           <View testID="assignment-detail-content">
-            {/* ===============================================================
-                PHẦN 1: HEADER BÀI TẬP & TIẾN ĐỘ MÔN HỌC (Figma 1.1. Open Subject -> TableHeader r=12)
-               =============================================================== */}
             <View
               style={[
                 styles.headerCard,
                 {
                   backgroundColor: colors.surfaceCard,
-                  borderColor: palette.border,
-                  borderRadius: radius.lg,
+                  borderColor: colors.borderSubtle,
+                  borderRadius: radius.md,
                   padding: spacing.lg,
                   marginBottom: spacing.lg,
                 },
@@ -257,14 +244,14 @@ export default function AssignmentDetailScreen() {
                   style={[
                     styles.coursePill,
                     {
-                      backgroundColor: palette.softBg,
+                      backgroundColor: colors.primarySoft,
                       borderRadius: radius.sm,
                       paddingHorizontal: spacing.sm,
                       paddingVertical: 4,
                     },
                   ]}
                 >
-                  <Text style={[typography.captionSemibold, { color: palette.text }]}>
+                  <Text style={[typography.captionSemibold, { color: colors.primary }]}>
                     {course?.code ?? 'COURSE'} • {course?.name ?? 'Học phần'}
                   </Text>
                 </View>
@@ -275,8 +262,8 @@ export default function AssignmentDetailScreen() {
                     styles.statusPill,
                     {
                       backgroundColor: isCompleted
-                        ? colors.successSoft
-                        : colors.warningSoft,
+                        ? colors.primarySoft
+                        : colors.backgroundTertiary,
                       borderRadius: radius.sm,
                       paddingHorizontal: spacing.sm,
                       paddingVertical: 4,
@@ -286,7 +273,7 @@ export default function AssignmentDetailScreen() {
                   <Text
                     style={[
                       typography.captionSemibold,
-                      { color: isCompleted ? colors.success : colors.warning },
+                      { color: isCompleted ? colors.primary : colors.textSecondary },
                     ]}
                   >
                     {isCompleted ? 'COMPLETED • ĐÃ XONG' : 'PENDING • ĐANG CHỜ'}
@@ -308,8 +295,8 @@ export default function AssignmentDetailScreen() {
                 {assignment.title}
               </Text>
 
-              <Text style={[typography.subheadlineSemibold, { color: palette.accent }]}>
-                ⏰ Hạn nộp: {formatLocalDateTime(assignment.dueAt)} ({deadlineInfo?.label})
+              <Text style={[typography.subheadlineSemibold, { color: colors.primary }]}>
+                Hạn nộp: {formatLocalDateTime(assignment.dueAt)} • {deadlineInfo?.label}
               </Text>
 
               {courseProgress && (
@@ -318,7 +305,7 @@ export default function AssignmentDetailScreen() {
                     styles.courseProgressMini,
                     {
                       backgroundColor: colors.backgroundSecondary,
-                      borderRadius: radius.md,
+                      borderRadius: radius.sm,
                       padding: spacing.md,
                       marginTop: spacing.md,
                     },
@@ -329,19 +316,18 @@ export default function AssignmentDetailScreen() {
                     style={[typography.footnoteSemibold, { color: colors.textPrimary }]}
                   >
                     Tiến độ môn {course?.code}: {courseProgress.completed}/
-                    {courseProgress.total} bài hoàn thành ({courseProgress.percentage}%)
+                    {courseProgress.total} bài hoàn thành • {courseProgress.percentage}%
                   </Text>
                 </View>
               )}
 
-              {/* Nút Đánh dấu Hoàn thành (Optimistic UI + Rollback) */}
               <View style={{ marginTop: spacing.lg }}>
                 <AccessibleButton
                   testID="detail-optimistic-toggle-btn"
                   label={
                     isCompleted
-                      ? '↩️ Đánh dấu Chưa hoàn thành (Optimistic UI)'
-                      : '✅ Đánh dấu Hoàn thành Ngay (Optimistic UI)'
+                      ? 'Đánh dấu Chưa hoàn thành'
+                      : 'Đánh dấu Hoàn thành'
                   }
                   accessibilityLabel={
                     isCompleted
@@ -350,18 +336,17 @@ export default function AssignmentDetailScreen() {
                   }
                   variant={isCompleted ? 'secondary' : 'primary'}
                   onPress={handleToggleOptimisticComplete}
-                  style={{ minHeight: 54 }}
+                  style={{ minHeight: 52, borderRadius: radius.pill }}
                 />
               </View>
 
-              {/* Công tắc thử nghiệm nhanh lỗi Server 500 để chứng minh Rollback */}
               <View style={{ marginTop: spacing.sm }}>
                 <AccessibleButton
                   testID="detail-simulate-500-btn"
                   label={
                     simulateServerError500
-                      ? '🔥 Chế độ Giả lập Lỗi 500: ĐANG BẬT (Bấm Hoàn thành sẽ tự Rollback)'
-                      : '🧪 Bật giả lập Lỗi Server 500 (Để test Optimistic Rollback)'
+                      ? 'Chế độ Giả lập Lỗi 500: ĐANG BẬT'
+                      : 'Bật giả lập Lỗi Server 500'
                   }
                   variant={simulateServerError500 ? 'danger' : 'ghost'}
                   onPress={() => {
@@ -387,23 +372,20 @@ export default function AssignmentDetailScreen() {
               )}
             </View>
 
-            {/* ===============================================================
-                PHẦN 2: GHI CHÚ HỌC TẬP (Figma 2.1. Open Notes -> InputNotes)
-               =============================================================== */}
             <View
               style={[
                 styles.sectionCard,
                 {
                   backgroundColor: colors.surfaceCard,
                   borderColor: colors.borderSubtle,
-                  borderRadius: radius.lg,
+                  borderRadius: radius.md,
                   padding: spacing.lg,
                   marginBottom: spacing.lg,
                 },
               ]}
             >
               <Text style={[typography.headline, { color: colors.textPrimary }]}>
-                📝 Ghi chú & Yêu cầu Bài tập
+                Ghi chú và Yêu cầu Bài tập
               </Text>
               <Text
                 style={[
@@ -416,24 +398,20 @@ export default function AssignmentDetailScreen() {
               </Text>
             </View>
 
-            {/* ===============================================================
-                PHẦN 3: ĐÍNH KÈM ẢNH CHỤP GHI CHÚ VIẾT TAY / BẢNG TRẮNG
-                (Module 5 Bước 5.2.3 & 5.3.2 — Figma 3.1. Add file / 3.2. Added file)
-               =============================================================== */}
             <View
               style={[
                 styles.sectionCard,
                 {
                   backgroundColor: colors.surfaceCard,
                   borderColor: colors.borderSubtle,
-                  borderRadius: radius.lg,
+                  borderRadius: radius.md,
                   padding: spacing.lg,
                   marginBottom: spacing.lg,
                 },
               ]}
             >
               <Text style={[typography.headline, { color: colors.textPrimary }]}>
-                📷 Ảnh chụp Ghi chú Viết tay / Bảng trắng
+                Ảnh chụp Ghi chú và Bảng trắng
               </Text>
               <Text
                 style={[
@@ -451,8 +429,8 @@ export default function AssignmentDetailScreen() {
                     styles.photoPreviewBox,
                     {
                       backgroundColor: colors.backgroundSecondary,
-                      borderColor: colors.primary,
-                      borderRadius: radius.md,
+                      borderColor: colors.borderSubtle,
+                      borderRadius: radius.sm,
                       padding: spacing.md,
                       marginBottom: spacing.md,
                     },
@@ -466,10 +444,10 @@ export default function AssignmentDetailScreen() {
                   <Text
                     style={[
                       typography.footnoteSemibold,
-                      { color: colors.success, marginTop: spacing.sm },
+                      { color: colors.primary, marginTop: spacing.sm },
                     ]}
                   >
-                    ✓ Đã đính kèm ảnh ghi chú vào bài tập
+                    Đã đính kèm ảnh ghi chú vào bài tập
                   </Text>
                   <AccessibleButton
                     testID="remove-photo-btn"
@@ -486,7 +464,7 @@ export default function AssignmentDetailScreen() {
                     {
                       backgroundColor: colors.backgroundSecondary,
                       borderColor: colors.borderSubtle,
-                      borderRadius: radius.md,
+                      borderRadius: radius.sm,
                       padding: spacing.lg,
                       marginBottom: spacing.md,
                     },
@@ -512,13 +490,13 @@ export default function AssignmentDetailScreen() {
                 />
                 <AccessibleButton
                   testID="take-camera-photo-btn"
-                  label="Chụp ảnh Bảng trắng / Vở ghi"
+                  label="Chụp ảnh Bảng trắng hoặc Vở ghi"
                   variant="secondary"
                   onPress={handleTakePhotoFromCamera}
                 />
                 <AccessibleButton
                   testID="attach-sample-photo-btn"
-                  label="Gắn ảnh Bảng trắng mẫu (Máy ảo)"
+                  label="Gắn ảnh Bảng trắng mẫu"
                   variant="secondary"
                   onPress={handleAttachSampleWhiteboard}
                 />
@@ -536,24 +514,20 @@ export default function AssignmentDetailScreen() {
               )}
             </View>
 
-            {/* ===============================================================
-                PHẦN 4: NHẮC HẠN THÔNG BÁO CỤC BỘ & DEEP LINKING
-                (Module 6 Bước 6.1 & 6.2 — Gửi thông báo nhắc thử sau 5 giây)
-               =============================================================== */}
             <View
               style={[
                 styles.sectionCard,
                 {
                   backgroundColor: colors.surfaceCard,
                   borderColor: colors.borderSubtle,
-                  borderRadius: radius.lg,
+                  borderRadius: radius.md,
                   padding: spacing.lg,
                   marginBottom: spacing.lg,
                 },
               ]}
             >
               <Text style={[typography.headline, { color: colors.textPrimary }]}>
-                Nhắc hạn Thông báo Cục bộ & Deep Link
+                Nhắc hạn Thông báo Cục bộ
               </Text>
               <Text
                 style={[
@@ -562,7 +536,7 @@ export default function AssignmentDetailScreen() {
                 ]}
               >
                 Khi chạm vào thông báo nhắc hạn, ứng dụng sẽ tự động điều hướng mở thẳng màn
-                hình chi tiết bài tập này (`/assignment/{assignment.id}`).
+                hình chi tiết của bài tập này.
               </Text>
 
               <View style={styles.buttonStack}>
@@ -594,9 +568,6 @@ export default function AssignmentDetailScreen() {
               )}
             </View>
 
-            {/* ===============================================================
-                PHẦN 5: CHỈNH SỬA (MỞ MODAL) & XÓA BÀI TẬP
-               =============================================================== */}
             <View style={styles.footerActionsRow}>
               <AccessibleButton
                 testID="edit-assignment-modal-btn"
@@ -633,7 +604,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerCard: {
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   badgeRow: {
     flexDirection: 'row',

@@ -1,11 +1,6 @@
 /**
- * Module 2 (Bước 2.3): Màn hình Đăng nhập app/(auth)/sign-in.tsx (Màn hình 1/5+)
- * Giao diện lọc & chuyển thể từ "Student Planner App (Community).fig":
- * - Màn hình "3.2. Login" & "3.3. Password" (Header Title 1 Bold 27/32 + Subheadline 15/20)
- * - Ô nhập liệu ".Field" (height: 56, borderRadius: 16)
- * - Nút "Button=Primary" (height: 56, borderRadius: 16, vùng chạm >= 44x44)
- * - Xử lý đủ 4 trạng thái: Loading, Error + nút Retry, Empty/Form, Content.
- * - Lưu phiên bảo mật bằng Expo SecureStore (sống sót qua Force Quit và xóa sạch khi Sign Out).
+ * Màn hình Đăng nhập app/(auth)/sign-in.tsx
+ * Phong cách tối giản Google Tasks, không dùng icon, không dùng ngoặc đơn.
  */
 
 import { useRouter } from 'expo-router';
@@ -59,7 +54,7 @@ export default function SignInScreen() {
 
   const [email, setEmail] = useState('sinhvien01@example.edu.vn');
   const [password, setPassword] = useState('123456');
-  const [studentName, setStudentName] = useState('Nguyễn Văn A (SV001)');
+  const [studentName, setStudentName] = useState('Nguyễn Văn A');
   const [showEmptyGuide, setShowEmptyGuide] = useState(false);
 
   const handleSignIn = async () => {
@@ -84,7 +79,6 @@ export default function SignInScreen() {
           ]}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Thanh trên cùng: Huy hiệu trường & nút đổi Light/Dark từ 1 file token */}
           <View style={styles.topBar}>
             <View
               style={[
@@ -118,12 +112,11 @@ export default function SignInScreen() {
               ]}
             >
               <Text style={[typography.footnoteSemibold, { color: colors.textPrimary }]}>
-                {isDark ? 'Light' : 'Dark'}
+                {isDark ? 'Sáng' : 'Tối'}
               </Text>
             </Pressable>
           </View>
 
-          {/* Header chuẩn Figma "3.2. Login" (Title 1 Bold 27/32 + Subheadline 15/20) */}
           <View style={{ marginTop: spacing.xl, marginBottom: spacing.xl }}>
             <Text style={[typography.title1, { color: colors.textPrimary }]}>
               Đăng nhập Study Planner
@@ -135,11 +128,10 @@ export default function SignInScreen() {
               ]}
             >
               Nhập email sinh viên và mật khẩu. Phiên làm việc được mã hóa trong Expo SecureStore
-              và tự động duy trì ngay cả khi đóng hẳn ứng dụng (Force Quit).
+              và tự động duy trì ngay cả khi đóng hẳn ứng dụng.
             </Text>
           </View>
 
-          {/* Khung 4 trạng thái chuẩn hóa qua ScreenStateView */}
           <ScreenStateView
             isLoading={isSubmitting}
             loadingLabel="Đang xác thực và lưu phiên bảo mật vào Expo SecureStore..."
@@ -154,16 +146,15 @@ export default function SignInScreen() {
             }}
             isEmpty={showEmptyGuide}
             emptyTitle="Chưa có thông tin tài khoản"
-            emptyMessage="Chọn một trong 3 mã số sinh viên của nhóm để tự động điền thông tin đăng nhập mẫu."
+            emptyMessage="Chọn một trong 3 mã số sinh viên mẫu để tự động điền thông tin đăng nhập."
             emptyActionLabel="Điền tài khoản mẫu"
             onEmptyAction={() => {
               setEmail('sinhvien01@example.edu.vn');
               setPassword('123456');
-              setStudentName('Nguyễn Văn A (SV001)');
+              setStudentName('Nguyễn Văn A');
               setShowEmptyGuide(false);
             }}
           >
-            {/* Chọn nhanh tài khoản 3 thành viên trong nhóm */}
             <View style={{ marginBottom: spacing.lg }}>
               <Text
                 style={[
@@ -171,7 +162,7 @@ export default function SignInScreen() {
                   { color: colors.textSecondary, marginBottom: spacing.sm },
                 ]}
               >
-                CHỌN NHANH TÀI KHOẢN MẪU:
+                TÀI KHOẢN MẪU:
               </Text>
               <View style={styles.quickAccountsRow}>
                 {QUICK_ACCOUNTS.map((acc) => {
@@ -186,7 +177,7 @@ export default function SignInScreen() {
                         clearAuthError();
                         setEmail(acc.email);
                         setPassword('123456');
-                        setStudentName(`${acc.name} (${acc.code})`);
+                        setStudentName(acc.name);
                       }}
                       style={[
                         styles.accountChip,
@@ -216,7 +207,6 @@ export default function SignInScreen() {
               </View>
             </View>
 
-            {/* Ô nhập Email theo chuẩn Figma UI Kit ".Field" (height 56, borderRadius 16) */}
             <View style={{ marginBottom: spacing.md }}>
               <Text
                 style={[
@@ -244,7 +234,7 @@ export default function SignInScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                   },
@@ -252,7 +242,6 @@ export default function SignInScreen() {
               />
             </View>
 
-            {/* Ô nhập Họ tên hiển thị */}
             <View style={{ marginBottom: spacing.md }}>
               <Text
                 style={[
@@ -260,7 +249,7 @@ export default function SignInScreen() {
                   { color: colors.textPrimary, marginBottom: spacing.xs },
                 ]}
               >
-                Họ tên & MSSV
+                Họ tên sinh viên
               </Text>
               <TextInput
                 testID="signin-name-input"
@@ -275,7 +264,7 @@ export default function SignInScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                   },
@@ -283,7 +272,6 @@ export default function SignInScreen() {
               />
             </View>
 
-            {/* Ô nhập Mật khẩu theo chuẩn Figma "3.3. Password" */}
             <View style={{ marginBottom: spacing.xl }}>
               <Text
                 style={[
@@ -291,7 +279,7 @@ export default function SignInScreen() {
                   { color: colors.textPrimary, marginBottom: spacing.xs },
                 ]}
               >
-                Mật khẩu (tối thiểu 6 ký tự)
+                Mật khẩu tối thiểu 6 ký tự
               </Text>
               <TextInput
                 testID="signin-password-input"
@@ -310,7 +298,7 @@ export default function SignInScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                   },
@@ -318,34 +306,32 @@ export default function SignInScreen() {
               />
             </View>
 
-            {/* Nút Đăng nhập chính (Figma Button=Primary, height: 56, r=16) */}
             <AccessibleButton
               testID="signin-submit-button"
               label="Đăng nhập vào Study Planner"
               accessibilityLabel="Đăng nhập vào Study Planner"
               onPress={handleSignIn}
-              style={{ minHeight: 56, borderRadius: radius.lg }}
+              style={{ minHeight: 52, borderRadius: radius.pill }}
             />
 
-            {/* Các nút kiểm chứng 4 trạng thái (Error + Retry / Empty) cho buổi bảo vệ */}
             <View
               style={[
                 styles.demoStateBox,
                 {
                   backgroundColor: colors.surfaceElevated,
                   borderColor: colors.borderSubtle,
-                  borderRadius: radius.lg,
+                  borderRadius: radius.md,
                   padding: spacing.md,
                   marginTop: spacing.xxl,
                 },
               ]}
             >
               <Text style={[typography.captionSemibold, { color: colors.textSecondary }]}>
-                🛠️ BẢNG KIỂM THỬ 4 TRẠNG THÁI (DÀNH CHO DEMO BẢO VỆ):
+                BẢNG KIỂM THỬ TRẠNG THÁI MÀN HÌNH:
               </Text>
               <View style={[styles.demoButtonRow, { marginTop: spacing.sm }]}>
                 <AccessibleButton
-                  label="Giả lập Lỗi + Retry"
+                  label="Giả lập Lỗi và Thử lại"
                   accessibilityLabel="Giả lập trạng thái lỗi xác thực và nút thử lại"
                   variant="secondary"
                   onPress={() => {
@@ -355,7 +341,7 @@ export default function SignInScreen() {
                   style={styles.flexOne}
                 />
                 <AccessibleButton
-                  label="Trạng thái Empty"
+                  label="Trạng thái Trống"
                   accessibilityLabel="Xem trạng thái Empty của màn hình đăng nhập"
                   variant="secondary"
                   onPress={() => setShowEmptyGuide(true)}
@@ -403,7 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   figmaField: {
-    height: 56,
+    height: 52,
     borderWidth: 1,
   },
   demoStateBox: {

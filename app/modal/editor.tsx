@@ -1,11 +1,6 @@
 /**
- * Module 3 (Bước 3.3.2): Modal Route — app/modal/editor.tsx (Màn hình 3/5+ — Modal Route)
- * Giao diện lọc & chuyển thể từ "Student Planner App (Community).fig":
- * - Màn hình "1.2. Add note", "ModalStack", "ModalActionBar" & ".Field" (borderRadius: 16)
- * - Cho phép sinh viên thêm mới hoặc chỉnh sửa:
- *   (A) Bài tập (chọn môn học, nhập tiêu đề, chọn/nhập ngày giờ hạn nộp, nhập ghi chú)
- *   (B) Môn học (mã học phần, tên môn học, màu sắc CourseColorKey, giảng viên, phòng học)
- * - Xử lý đủ 4 trạng thái qua ScreenStateView.
+ * Modal Route — app/modal/editor.tsx
+ * Giao diện tối giản chuẩn Google Tasks, không dùng icon, không dùng ngoặc đơn, không chọn màu lòe loẹt.
  */
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -31,7 +26,6 @@ import {
   useUpdateCourseMutation,
 } from '../../src/hooks/useStudyQueries';
 import {
-  COURSE_COLOR_OPTIONS,
   MIN_TOUCH_TARGET,
   useAppTheme,
 } from '../../src/theme/tokens';
@@ -49,7 +43,7 @@ interface DeadlinePreset {
 const DEADLINE_PRESETS: DeadlinePreset[] = [
   {
     key: 'in6h',
-    label: 'Hôm nay (+6h • Gấp 48h)',
+    label: 'Hôm nay sau 6 giờ',
     getIso: () => new Date(Date.now() + 6 * 3600 * 1000).toISOString(),
   },
   {
@@ -70,7 +64,7 @@ const DEADLINE_PRESETS: DeadlinePreset[] = [
   },
   {
     key: 'tomorrow2330',
-    label: 'Ngày mai 23:30 (Test biên)',
+    label: 'Ngày mai 23:30',
     getIso: () => {
       const now = new Date();
       return new Date(
@@ -86,7 +80,7 @@ const DEADLINE_PRESETS: DeadlinePreset[] = [
   },
   {
     key: 'in3days',
-    label: 'Sau 3 ngày (14:00)',
+    label: 'Sau 3 ngày 14:00',
     getIso: () => {
       const now = new Date();
       return new Date(
@@ -126,7 +120,6 @@ export default function ModalEditorScreen() {
   const initialMode: EditorMode = params.mode === 'course' ? 'course' : 'assignment';
   const [editorMode, setEditorMode] = useState<EditorMode>(initialMode);
 
-  // State cho Form Bài tập
   const existingAssignment = assignments.find((a) => a.id === params.assignmentId);
   const [selectedCourseId, setSelectedCourseId] = useState<string>(
     existingAssignment?.courseId ?? params.courseId ?? courses[0]?.id ?? ''
@@ -139,7 +132,6 @@ export default function ModalEditorScreen() {
   );
   const [notes, setNotes] = useState<string>(existingAssignment?.notes ?? '');
 
-  // State cho Form Môn học
   const existingCourse = courses.find((c) => c.id === params.courseId);
   const [courseCode, setCourseCode] = useState<string>(existingCourse?.code ?? '');
   const [courseName, setCourseName] = useState<string>(existingCourse?.name ?? '');
@@ -226,14 +218,14 @@ export default function ModalEditorScreen() {
       }
       router.back();
     } catch {
-      // Lỗi đã hiển thị qua mutationError trong ScreenStateView
+      // Lỗi hiển thị qua mutationError
     }
   };
 
   const handleSaveCourse = async () => {
     setValidationError(null);
     if (!courseCode.trim()) {
-      setValidationError('Vui lòng nhập mã học phần (VD: MAT101).');
+      setValidationError('Vui lòng nhập mã học phần.');
       return;
     }
     if (!courseName.trim()) {
@@ -262,7 +254,7 @@ export default function ModalEditorScreen() {
       }
       router.back();
     } catch {
-      // Lỗi đã hiển thị qua mutationError
+      // Lỗi hiển thị qua mutationError
     }
   };
 
@@ -279,13 +271,12 @@ export default function ModalEditorScreen() {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Thanh chuyển chế độ Modal (Thêm/Sửa Bài tập vs Môn học) kiểu Scopebars Figma */}
         <View
           style={[
             styles.scopeBar,
             {
               backgroundColor: colors.scopeBarBg,
-              borderRadius: radius.md,
+              borderRadius: radius.sm,
               padding: 4,
               marginBottom: spacing.lg,
             },
@@ -315,7 +306,7 @@ export default function ModalEditorScreen() {
                 typography.subheadlineSemibold,
                 {
                   color:
-                    editorMode === 'assignment' ? colors.textPrimary : colors.textSecondary,
+                    editorMode === 'assignment' ? colors.primary : colors.textSecondary,
                 },
               ]}
             >
@@ -346,7 +337,7 @@ export default function ModalEditorScreen() {
               style={[
                 typography.subheadlineSemibold,
                 {
-                  color: editorMode === 'course' ? colors.textPrimary : colors.textSecondary,
+                  color: editorMode === 'course' ? colors.primary : colors.textSecondary,
                 },
               ]}
             >
@@ -376,7 +367,6 @@ export default function ModalEditorScreen() {
         >
           {editorMode === 'assignment' ? (
             <View testID="assignment-editor-form">
-              {/* 1. Chọn môn học */}
               <Text
                 style={[
                   typography.subheadlineSemibold,
@@ -392,7 +382,6 @@ export default function ModalEditorScreen() {
               >
                 {courses.map((course) => {
                   const selected = selectedCourseId === course.id;
-                  const palette = colors.courseColors[course.colour];
                   return (
                     <Pressable
                       key={course.id}
@@ -405,28 +394,19 @@ export default function ModalEditorScreen() {
                         styles.courseOptionChip,
                         {
                           minHeight: MIN_TOUCH_TARGET,
-                          backgroundColor: selected ? palette.accent : colors.backgroundSecondary,
-                          borderColor: selected ? palette.accent : colors.borderSubtle,
-                          borderRadius: radius.md,
+                          backgroundColor: selected
+                            ? colors.primarySoft
+                            : colors.backgroundSecondary,
+                          borderColor: selected ? colors.primary : colors.borderSubtle,
+                          borderRadius: radius.pill,
                           paddingHorizontal: spacing.md,
-                          flexDirection: 'row',
-                          alignItems: 'center',
                         },
                       ]}
                     >
-                      <View
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: selected ? colors.textInverse : palette.accent,
-                          marginRight: 6,
-                        }}
-                      />
                       <Text
                         style={[
                           typography.footnoteSemibold,
-                          { color: selected ? colors.textInverse : colors.textPrimary },
+                          { color: selected ? colors.primary : colors.textPrimary },
                         ]}
                       >
                         {course.code} • {course.name}
@@ -436,7 +416,6 @@ export default function ModalEditorScreen() {
                 })}
               </ScrollView>
 
-              {/* 2. Nhập tiêu đề bài tập (Figma .Field r=16) */}
               <Text
                 style={[
                   typography.subheadlineSemibold,
@@ -458,7 +437,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     marginBottom: spacing.md,
@@ -466,14 +445,13 @@ export default function ModalEditorScreen() {
                 ]}
               />
 
-              {/* 3. Chọn nhanh hạn nộp theo giờ địa phương */}
               <Text
                 style={[
                   typography.subheadlineSemibold,
                   { color: colors.textPrimary, marginBottom: spacing.xs },
                 ]}
               >
-                3. Thời hạn nộp (Múi giờ địa phương): {formatLocalDateTime(dueAtIso)}
+                3. Thời hạn nộp: {formatLocalDateTime(dueAtIso)}
               </Text>
               <View style={[styles.presetGrid, { marginBottom: spacing.md }]}>
                 {DEADLINE_PRESETS.map((preset) => (
@@ -489,26 +467,25 @@ export default function ModalEditorScreen() {
                         minHeight: MIN_TOUCH_TARGET,
                         backgroundColor: colors.backgroundSecondary,
                         borderColor: colors.borderSubtle,
-                        borderRadius: radius.md,
+                        borderRadius: radius.pill,
                         paddingHorizontal: spacing.md,
                       },
                     ]}
                   >
                     <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
-                      ⏱️ {preset.label}
+                      {preset.label}
                     </Text>
                   </Pressable>
                 ))}
               </View>
 
-              {/* 4. Ghi chú chi tiết (Figma InputNotes) */}
               <Text
                 style={[
                   typography.subheadlineSemibold,
                   { color: colors.textPrimary, marginBottom: spacing.xs },
                 ]}
               >
-                4. Ghi chú học tập (Notes)
+                4. Ghi chú học tập
               </Text>
               <TextInput
                 testID="assignment-notes-input"
@@ -517,7 +494,7 @@ export default function ModalEditorScreen() {
                 onChangeText={setNotes}
                 multiline
                 numberOfLines={4}
-                placeholder="Nhập yêu cầu chi tiết, tài liệu tham khảo hoặc ghi chú nhóm..."
+                placeholder="Nhập yêu cầu chi tiết, tài liệu tham khảo hoặc ghi chú..."
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,
@@ -525,7 +502,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     paddingVertical: spacing.md,
@@ -541,7 +518,7 @@ export default function ModalEditorScreen() {
                   existingAssignment ? 'Cập nhật bài tập' : 'Lưu bài tập mới'
                 }
                 onPress={handleSaveAssignment}
-                style={{ minHeight: 56 }}
+                style={{ minHeight: 52, borderRadius: radius.pill }}
               />
             </View>
           ) : (
@@ -568,7 +545,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     marginBottom: spacing.md,
@@ -589,7 +566,7 @@ export default function ModalEditorScreen() {
                 accessibilityLabel="Tên môn học"
                 value={courseName}
                 onChangeText={setCourseName}
-                placeholder="VD: Lập trình Thiết bị Di động"
+                placeholder="VD: Đại số tuyến tính"
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,
@@ -597,7 +574,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     marginBottom: spacing.md,
@@ -611,51 +588,7 @@ export default function ModalEditorScreen() {
                   { color: colors.textPrimary, marginBottom: spacing.xs },
                 ]}
               >
-                3. Màu nhận diện môn học (Từ bảng màu Figma Graphics)
-              </Text>
-              <View style={[styles.colorGrid, { marginBottom: spacing.md }]}>
-                {COURSE_COLOR_OPTIONS.map((opt) => {
-                  const selected = courseColour === opt.key;
-                  const palette = colors.courseColors[opt.key];
-                  return (
-                    <Pressable
-                      key={opt.key}
-                      testID={`course-color-${opt.key}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Chọn màu ${opt.label}`}
-                      accessibilityState={{ selected }}
-                      onPress={() => setCourseColour(opt.key)}
-                      style={[
-                        styles.colorOptionBtn,
-                        {
-                          minHeight: MIN_TOUCH_TARGET,
-                          backgroundColor: selected ? palette.accent : palette.softBg,
-                          borderColor: palette.accent,
-                          borderRadius: radius.md,
-                          paddingHorizontal: spacing.md,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          typography.footnoteSemibold,
-                          { color: selected ? colors.textInverse : palette.text },
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              <Text
-                style={[
-                  typography.subheadlineSemibold,
-                  { color: colors.textPrimary, marginBottom: spacing.xs },
-                ]}
-              >
-                4. Giảng viên & Phòng học (Tùy chọn)
+                3. Giảng viên và Phòng học
               </Text>
               <TextInput
                 value={instructor}
@@ -668,7 +601,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     marginBottom: spacing.sm,
@@ -678,7 +611,7 @@ export default function ModalEditorScreen() {
               <TextInput
                 value={room}
                 onChangeText={setRoom}
-                placeholder="Phòng học / Phòng Lab (VD: B3-204)"
+                placeholder="Phòng học VD: B3-204"
                 placeholderTextColor={colors.textTertiary}
                 style={[
                   typography.body,
@@ -686,7 +619,7 @@ export default function ModalEditorScreen() {
                   {
                     backgroundColor: colors.backgroundSecondary,
                     borderColor: colors.borderSubtle,
-                    borderRadius: radius.lg,
+                    borderRadius: radius.md,
                     color: colors.textPrimary,
                     paddingHorizontal: spacing.lg,
                     marginBottom: spacing.xl,
@@ -703,7 +636,7 @@ export default function ModalEditorScreen() {
                 }
                 accessibilityLabel="Lưu thông tin môn học"
                 onPress={handleSaveCourse}
-                style={{ minHeight: 56 }}
+                style={{ minHeight: 52, borderRadius: radius.pill }}
               />
             </View>
           )}
@@ -732,7 +665,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   figmaField: {
-    height: 56,
+    height: 52,
     borderWidth: 1,
   },
   presetGrid: {
@@ -749,15 +682,5 @@ const styles = StyleSheet.create({
     minHeight: 110,
     borderWidth: 1,
     textAlignVertical: 'top',
-  },
-  colorGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  colorOptionBtn: {
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

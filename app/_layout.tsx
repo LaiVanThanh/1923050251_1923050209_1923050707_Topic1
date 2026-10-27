@@ -1,11 +1,5 @@
 /**
- * Module 2 (Bước 2.3), Module 5 (Bước 5.2) & Module 6 (Bước 6.2):
- * Root Layout (app/_layout.tsx)
- * 1. Khởi tạo hydrateAuth() từ Expo SecureStore & nạp Offline Cache khi mở app.
- * 2. Route Guard: Nếu 'authenticated' -> giữ ở /(tabs) hoặc màn hình con;
- *    nếu 'unauthenticated' -> điều hướng về /(auth)/sign-in.
- * 3. Kết nối NetInfo với onlineManager của TanStack Query.
- * 4. Lắng nghe chạm thông báo (Expo Notifications Deep Link) -> router.push(`/assignment/${assignmentId}`).
+ * Root Layout — app/_layout.tsx
  */
 
 import NetInfo from '@react-native-community/netinfo';
@@ -17,6 +11,13 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, LogBox, Platform, StyleSheet, Text, View } from 'react-native';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { configureNotificationHandler } from '../src/services/notifications';
+import {
+  loadOfflineSnapshot,
+  queryClient,
+  useNetworkSyncStore,
+} from '../src/services/queryClient';
+import { useAuthStatus, useAuthStore } from '../src/store/useAuthStore';
+import { useAppTheme } from '../src/theme/tokens';
 
 LogBox.ignoreAllLogs();
 
@@ -32,13 +33,6 @@ if (Platform.OS === 'web' && typeof window !== 'undefined') {
     }
   });
 }
-import {
-  loadOfflineSnapshot,
-  queryClient,
-  useNetworkSyncStore,
-} from '../src/services/queryClient';
-import { useAuthStatus, useAuthStore } from '../src/store/useAuthStore';
-import { useAppTheme } from '../src/theme/tokens';
 
 configureNotificationHandler();
 
@@ -49,13 +43,11 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
   const hydrateAuth = useAuthStore((s) => s.hydrateAuth);
   const { colors, typography, isDark } = useAppTheme();
 
-  // 1. Hydrate phiên đăng nhập từ SecureStore & nạp Offline Snapshot khi khởi động
   useEffect(() => {
     void loadOfflineSnapshot();
     void hydrateAuth();
   }, [hydrateAuth]);
 
-  // 2. Kết nối NetInfo với onlineManager của TanStack Query (Bước 5.2.1)
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const online = Boolean(state.isConnected && state.isInternetReachable !== false);
@@ -66,7 +58,6 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
     return () => unsubscribe();
   }, []);
 
-  // 3. Route Guard chuẩn Expo Router Authentication (Bước 2.3.1)
   useEffect(() => {
     if (authStatus === 'hydrating') {
       return;
@@ -81,7 +72,6 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
     }
   }, [authStatus, segments, router]);
 
-  // 4. Lắng nghe chạm thông báo cục bộ -> Deep Link mở thẳng /assignment/[id] (Bước 6.2.2)
   useEffect(() => {
     if (Platform.OS === 'web' || authStatus !== 'authenticated') {
       return;
@@ -119,7 +109,6 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
     };
   }, [authStatus, router]);
 
-  // Hiển thị màn hình Splash / Hydrating trong khi đang đọc token từ SecureStore
   if (authStatus === 'hydrating') {
     return (
       <View
@@ -134,7 +123,7 @@ function NavigationAndDeepLinkController({ children }: { children: React.ReactNo
             { color: colors.textPrimary, marginTop: 16 },
           ]}
         >
-          Study Planner • DNTU
+          Study Planner
         </Text>
         <Text
           style={[
@@ -184,7 +173,7 @@ export default function RootLayout() {
             name="modal/editor"
             options={{
               presentation: 'modal',
-              title: 'Thêm / Chỉnh sửa',
+              title: 'Thêm và Chỉnh sửa',
             }}
           />
           <Stack.Screen name="+not-found" options={{ title: 'Không tìm thấy trang' }} />
