@@ -34,6 +34,8 @@ interface PlannerFilterStoreState {
   shiftWeek: (deltaWeeks: number) => void;
   setSelectedDayStartMs: (dayStartMs: number | null) => void;
   resetFilters: () => void;
+ 
+
 }
 
 export const usePlannerFilterStore = create<PlannerFilterStoreState>((set) => ({
