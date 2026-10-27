@@ -84,7 +84,7 @@ export default function AssignmentDetailScreen() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setPhotoFeedback('Chưa cấp quyền truy cập Thư viện ảnh.');
+        setPhotoFeedback('Chưa cấp quyền truy cập Thư viện ảnh..');
         return;
       }
 
