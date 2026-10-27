@@ -145,20 +145,28 @@ export default function AssignmentDetailScreen() {
   const handleAttachSampleWhiteboard = async () => {
     if (!assignment) return;
     setPhotoFeedback(null);
-    await updateAssignmentMutation.mutateAsync({
-      id: assignment.id,
-      photoUri: SAMPLE_WHITEBOARD_DATA_URI,
-    });
-    setPhotoFeedback('Đã đính kèm ảnh ghi chú bảng trắng mẫu thành công!');
+    try {
+      await updateAssignmentMutation.mutateAsync({
+        id: assignment.id,
+        photoUri: SAMPLE_WHITEBOARD_DATA_URI,
+      });
+      setPhotoFeedback('Đã đính kèm ảnh ghi chú bảng trắng mẫu thành công!');
+    } catch {
+      setPhotoFeedback('Không thể đính kèm ảnh khi đang gặp lỗi máy chủ.');
+    }
   };
 
   const handleRemovePhoto = async () => {
     if (!assignment) return;
-    await updateAssignmentMutation.mutateAsync({
-      id: assignment.id,
-      photoUri: '',
-    });
-    setPhotoFeedback('Đã gỡ ảnh đính kèm khỏi bài tập.');
+    try {
+      await updateAssignmentMutation.mutateAsync({
+        id: assignment.id,
+        photoUri: '',
+      });
+      setPhotoFeedback('Đã gỡ ảnh đính kèm khỏi bài tập.');
+    } catch {
+      setPhotoFeedback('Không thể gỡ ảnh khi đang gặp lỗi máy chủ.');
+    }
   };
 
   const handleDemoReminder5Seconds = async () => {
@@ -356,7 +364,13 @@ export default function AssignmentDetailScreen() {
                       : '🧪 Bật giả lập Lỗi Server 500 (Để test Optimistic Rollback)'
                   }
                   variant={simulateServerError500 ? 'danger' : 'ghost'}
-                  onPress={() => setSimulateServerError500(!simulateServerError500)}
+                  onPress={() => {
+                    const next = !simulateServerError500;
+                    setSimulateServerError500(next);
+                    if (!next) {
+                      useOptimisticFeedbackStore.getState().setRollbackErrorBanner(null);
+                    }
+                  }}
                 />
               </View>
 

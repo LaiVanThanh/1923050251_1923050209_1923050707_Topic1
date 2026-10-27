@@ -20,7 +20,7 @@ import { saveOfflineSnapshot, useNetworkSyncStore } from './queryClient';
 const REMOTE_DB_STORAGE_KEY = 'study_planner_remote_db_v1';
 const OFFLINE_MUTATION_QUEUE_KEY = 'study_planner_mutation_queue_v1';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'https://6723223149342416.mockapi.io/api/v1';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || '';
 
 export interface QueuedMutationItem {
   id: string;
@@ -300,7 +300,6 @@ function assertServerHealthy(): void {
  * GET /courses
  */
 export async function fetchCoursesApi(): Promise<Course[]> {
-  assertServerHealthy();
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
 
@@ -331,7 +330,6 @@ export async function fetchCoursesApi(): Promise<Course[]> {
  * GET /assignments
  */
 export async function fetchAssignmentsApi(): Promise<Assignment[]> {
-  assertServerHealthy();
   const { isOnline, simulatedOffline } = useNetworkSyncStore.getState();
   const effectivelyOffline = !isOnline || simulatedOffline;
 

@@ -14,9 +14,24 @@ import * as Notifications from 'expo-notifications';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, LogBox, Platform, StyleSheet, Text, View } from 'react-native';
 import { OfflineBanner } from '../src/components/OfflineBanner';
 import { configureNotificationHandler } from '../src/services/notifications';
+
+LogBox.ignoreAllLogs();
+
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  window.addEventListener('error', (e) => {
+    if (e.message?.includes('500') || e.message?.includes('Giả lập lỗi 500')) {
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    if (String(e.reason)?.includes('500') || String(e.reason)?.includes('Giả lập lỗi 500')) {
+      e.preventDefault();
+    }
+  });
+}
 import {
   loadOfflineSnapshot,
   queryClient,

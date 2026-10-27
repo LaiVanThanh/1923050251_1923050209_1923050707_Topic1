@@ -24,6 +24,7 @@ import { ScreenStateView } from '../../src/components/ScreenStateView';
 import {
   useAssignmentsQuery,
   useCoursesQuery,
+  useOptimisticFeedbackStore,
 } from '../../src/hooks/useStudyQueries';
 import { useNetworkSyncStore } from '../../src/services/queryClient';
 import { useAuthStore, useCurrentUser } from '../../src/store/useAuthStore';
@@ -477,7 +478,13 @@ export default function CoursesAndProgressScreen() {
                 : 'Bật giả lập Lỗi Server 500 (Test Rollback)'
             }
             variant={simulateServerError500 ? 'danger' : 'secondary'}
-            onPress={() => setSimulateServerError500(!simulateServerError500)}
+            onPress={() => {
+              const next = !simulateServerError500;
+              setSimulateServerError500(next);
+              if (!next) {
+                useOptimisticFeedbackStore.getState().setRollbackErrorBanner(null);
+              }
+            }}
             style={{ marginTop: spacing.sm }}
           />
         </View>

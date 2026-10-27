@@ -61,6 +61,7 @@ export default function TabsLayout() {
         options={{
           title: 'Kế hoạch & Lịch tuần',
           tabBarLabel: 'Lịch & Bài tập',
+          tabBarAccessibilityLabel: 'tab-planner-btn',
           tabBarIcon: ({ color }) => (
             <View
               style={{
@@ -92,6 +93,7 @@ export default function TabsLayout() {
           ),
           headerLeft: () => (
             <Pressable
+              testID="header-add-task-btn"
               accessibilityRole="button"
               accessibilityLabel="Thêm bài tập mới"
               onPress={() => router.push({ pathname: '/modal/editor', params: { mode: 'assignment' } })}
@@ -119,6 +121,7 @@ export default function TabsLayout() {
         options={{
           title: 'Môn học & Tiến độ',
           tabBarLabel: 'Môn học & Hồ sơ',
+          tabBarAccessibilityLabel: 'tab-courses-btn',
           tabBarIcon: ({ color }) => (
             <View
               style={{
