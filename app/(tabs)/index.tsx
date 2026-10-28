@@ -268,11 +268,7 @@ export default function HomePlannerScreen() {
         >
           MÔN HỌC:
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.courseFilterScroll}
-        >
+        <View style={styles.courseFilterGrid}>
           <Pressable
             testID="course-filter-ALL"
             accessibilityRole="button"
@@ -337,7 +333,7 @@ export default function HomePlannerScreen() {
               </Pressable>
             );
           })}
-        </ScrollView>
+        </View>
       </View>
 
       {/* PHÂN KHU 3: VÙNG DỮ LIỆU ĐỒNG NHẤT */}
@@ -709,7 +705,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  courseFilterScroll: {
+  courseFilterGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     paddingVertical: 2,
   },

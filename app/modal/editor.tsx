@@ -375,11 +375,7 @@ export default function ModalEditorScreen() {
               >
                 1. Chọn môn học
               </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.md }}
-              >
+              <View style={[styles.courseChipsGrid, { gap: spacing.sm, paddingBottom: spacing.md }]}>
                 {courses.map((course) => {
                   const selected = selectedCourseId === course.id;
                   return (
@@ -414,7 +410,7 @@ export default function ModalEditorScreen() {
                     </Pressable>
                   );
                 })}
-              </ScrollView>
+              </View>
 
               <Text
                 style={[
@@ -663,6 +659,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  courseChipsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
   figmaField: {
     height: 52,
