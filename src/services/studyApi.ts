@@ -105,6 +105,14 @@ export function createSeedCourses(): Course[] {
       instructor: 'ThS. Đỗ Thu Hà',
       room: 'Phòng A2-204',
     },
+    {
+      id: 'quamon',
+      code: 'ECO105',
+      name: 'Kinh tế ',
+      colour: 'orange',
+      instructor: 'ThS. Đỗ ',
+      room: 'Phòng A2-204',
+    },
   ];
 }
 
@@ -170,6 +178,14 @@ export function createSeedAssignments(): Assignment[] {
       status: 'completed',
       notes: 'Xem lại lý thuyết và các dạng bài tập mẫu.',
     },
+    {
+      id: 'quamon',
+      courseId: 'quamon',
+      title: 'Ôn tập ma trận ',
+      dueAt: buildRelativeLocalIso(-3, 10, 0),
+      status: 'completed',
+      notes: 'Xem lại lý thuyết và các dạng bài tập mẫu.',
+    }
   ];
 }
 

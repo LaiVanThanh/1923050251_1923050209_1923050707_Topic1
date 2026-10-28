@@ -3,7 +3,6 @@
  * Tông màu và bố cục tối giản chuẩn Google Tasks, không dùng icon, không dùng ngoặc đơn.
  */
 
-import { onlineManager } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -18,10 +17,7 @@ import { ScreenStateView } from '../../src/components/ScreenStateView';
 import {
   useAssignmentsQuery,
   useCoursesQuery,
-  useOptimisticFeedbackStore,
 } from '../../src/hooks/useStudyQueries';
-import { useNetworkSyncStore } from '../../src/services/queryClient';
-import { syncWhenBackOnline } from '../../src/services/studyApi';
 import { useAuthStore, useCurrentUser } from '../../src/store/useAuthStore';
 import { usePlannerFilterStore } from '../../src/store/usePlannerFilterStore';
 import { MIN_TOUCH_TARGET, useAppTheme } from '../../src/theme/tokens';
@@ -47,11 +43,6 @@ export default function CoursesAndProgressScreen() {
   const coursesQuery = useCoursesQuery();
   const assignmentsQuery = useAssignmentsQuery();
 
-  const simulatedOffline = useNetworkSyncStore((s) => s.simulatedOffline);
-  const setSimulatedOffline = useNetworkSyncStore((s) => s.setSimulatedOffline);
-  const simulateServerError500 = useNetworkSyncStore((s) => s.simulateServerError500);
-  const setSimulateServerError500 = useNetworkSyncStore((s) => s.setSimulateServerError500);
-
   const setCourseIdFilter = usePlannerFilterStore((s) => s.setCourseIdFilter);
 
   const courses = coursesQuery.data ?? [];
@@ -63,15 +54,6 @@ export default function CoursesAndProgressScreen() {
 
   const courseProgressList = computeCourseProgress(courses, assignments);
   const overall = computeOverallProgress(courses, assignments);
-
-  const handleToggleOfflineSimulation = () => {
-    const nextOffline = !simulatedOffline;
-    setSimulatedOffline(nextOffline);
-    onlineManager.setOnline(!nextOffline);
-    if (!nextOffline) {
-      void syncWhenBackOnline();
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -437,44 +419,6 @@ export default function CoursesAndProgressScreen() {
           })}
         </View>
 
-        <Text
-          style={[
-            typography.captionSemibold,
-            { color: colors.textSecondary, marginTop: spacing.lg, marginBottom: spacing.xs },
-          ]}
-        >
-          KIỂM THỬ MẠNG VÀ ĐỒNG BỘ:
-        </Text>
-        <View style={styles.demoLabButtons}>
-          <AccessibleButton
-            testID="toggle-offline-mode-btn"
-            label={
-              simulatedOffline
-                ? 'Đang bật chế độ ngoại tuyến • Bấm để kết nối lại'
-                : 'Bật giả lập chế độ ngoại tuyến'
-            }
-            variant={simulatedOffline ? 'outline' : 'secondary'}
-            onPress={handleToggleOfflineSimulation}
-          />
-          <AccessibleButton
-            testID="toggle-server-500-btn"
-            label={
-              simulateServerError500
-                ? 'Đang bật giả lập lỗi máy chủ 500'
-                : 'Bật giả lập lỗi máy chủ 500'
-            }
-            variant={simulateServerError500 ? 'danger' : 'secondary'}
-            onPress={() => {
-              const next = !simulateServerError500;
-              setSimulateServerError500(next);
-              if (!next) {
-                useOptimisticFeedbackStore.getState().setRollbackErrorBanner(null);
-              }
-            }}
-            style={{ marginTop: spacing.sm }}
-          />
-        </View>
-
         <AccessibleButton
           testID="sign-out-button"
           label="Đăng xuất tài khoản"
@@ -570,8 +514,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  demoLabButtons: {
-    flexDirection: 'column',
   },
 });

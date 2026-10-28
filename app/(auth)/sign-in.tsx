@@ -313,42 +313,6 @@ export default function SignInScreen() {
               onPress={handleSignIn}
               style={{ minHeight: 52, borderRadius: radius.pill }}
             />
-
-            <View
-              style={[
-                styles.demoStateBox,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderColor: colors.borderSubtle,
-                  borderRadius: radius.md,
-                  padding: spacing.md,
-                  marginTop: spacing.xxl,
-                },
-              ]}
-            >
-              <Text style={[typography.captionSemibold, { color: colors.textSecondary }]}>
-                BẢNG KIỂM THỬ TRẠNG THÁI MÀN HÌNH:
-              </Text>
-              <View style={[styles.demoButtonRow, { marginTop: spacing.sm }]}>
-                <AccessibleButton
-                  label="Giả lập Lỗi và Thử lại"
-                  accessibilityLabel="Giả lập trạng thái lỗi xác thực và nút thử lại"
-                  variant="secondary"
-                  onPress={() => {
-                    setPassword('error500');
-                    void signIn({ email, password: 'error500', studentName });
-                  }}
-                  style={styles.flexOne}
-                />
-                <AccessibleButton
-                  label="Trạng thái Trống"
-                  accessibilityLabel="Xem trạng thái Empty của màn hình đăng nhập"
-                  variant="secondary"
-                  onPress={() => setShowEmptyGuide(true)}
-                  style={styles.flexOne}
-                />
-              </View>
-            </View>
           </ScreenStateView>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -391,12 +355,5 @@ const styles = StyleSheet.create({
   figmaField: {
     height: 52,
     borderWidth: 1,
-  },
-  demoStateBox: {
-    borderWidth: 1,
-  },
-  demoButtonRow: {
-    flexDirection: 'row',
-    gap: 8,
   },
 });

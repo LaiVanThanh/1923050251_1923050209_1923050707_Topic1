@@ -27,7 +27,6 @@ import {
   scheduleAssignmentReminder,
   scheduleDemoReminderIn5Seconds,
 } from '../../src/services/notifications';
-import { useNetworkSyncStore } from '../../src/services/queryClient';
 import { useAppTheme } from '../../src/theme/tokens';
 import {
   formatLocalDateTime,
@@ -49,8 +48,6 @@ export default function AssignmentDetailScreen() {
   const updateAssignmentMutation = useUpdateAssignmentMutation();
   const deleteAssignmentMutation = useDeleteAssignmentMutation();
 
-  const simulateServerError500 = useNetworkSyncStore((s) => s.simulateServerError500);
-  const setSimulateServerError500 = useNetworkSyncStore((s) => s.setSimulateServerError500);
   const rollbackErrorBanner = useOptimisticFeedbackStore((s) => s.rollbackErrorBanner);
 
   const [notificationFeedback, setNotificationFeedback] = useState<string | null>(null);
@@ -337,25 +334,6 @@ export default function AssignmentDetailScreen() {
                   variant={isCompleted ? 'secondary' : 'primary'}
                   onPress={handleToggleOptimisticComplete}
                   style={{ minHeight: 52, borderRadius: radius.pill }}
-                />
-              </View>
-
-              <View style={{ marginTop: spacing.sm }}>
-                <AccessibleButton
-                  testID="detail-simulate-500-btn"
-                  label={
-                    simulateServerError500
-                      ? 'Chế độ Giả lập Lỗi 500: ĐANG BẬT'
-                      : 'Bật giả lập Lỗi Server 500'
-                  }
-                  variant={simulateServerError500 ? 'danger' : 'ghost'}
-                  onPress={() => {
-                    const next = !simulateServerError500;
-                    setSimulateServerError500(next);
-                    if (!next) {
-                      useOptimisticFeedbackStore.getState().setRollbackErrorBanner(null);
-                    }
-                  }}
                 />
               </View>
 
