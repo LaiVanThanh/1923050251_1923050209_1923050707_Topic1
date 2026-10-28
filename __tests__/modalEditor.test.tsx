@@ -184,4 +184,91 @@ describe('Modal Editor Screen', () => {
       expect(mockBack).toHaveBeenCalledTimes(1);
     });
   });
+
+  it('cho phép chọn mốc giờ nhanh và cập nhật thời hạn nộp', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ModalEditorScreen />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('quick-hour-1700')).toBeTruthy();
+    });
+
+    const quickHour17 = screen.getByTestId('quick-hour-1700');
+    fireEvent.press(quickHour17);
+
+    const hourInput = screen.getByTestId('custom-deadline-hour-input');
+    const minuteInput = screen.getByTestId('custom-deadline-minute-input');
+    expect(hourInput.props.value).toBe('17');
+    expect(minuteInput.props.value).toBe('00');
+  });
+
+  it('cho phép nhập giờ và phút tùy chỉnh vào ô input', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ModalEditorScreen />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('custom-deadline-hour-input')).toBeTruthy();
+      expect(screen.getByTestId('custom-deadline-minute-input')).toBeTruthy();
+    });
+
+    const hourInput = screen.getByTestId('custom-deadline-hour-input');
+    const minuteInput = screen.getByTestId('custom-deadline-minute-input');
+
+    fireEvent.changeText(hourInput, '21');
+    fireEvent.changeText(minuteInput, '45');
+
+    expect(hourInput.props.value).toBe('21');
+    expect(minuteInput.props.value).toBe('45');
+  });
+
+  it('cho phép tăng giảm giờ nộp bằng nút điều chỉnh +1 giờ và -1 giờ', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ModalEditorScreen />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('quick-hour-1400')).toBeTruthy();
+    });
+
+    // Đặt mốc 14:00
+    fireEvent.press(screen.getByTestId('quick-hour-1400'));
+    const hourInput = screen.getByTestId('custom-deadline-hour-input');
+    expect(hourInput.props.value).toBe('14');
+
+    // Bấm +1 giờ -> 15:00
+    const add1hBtn = screen.getByTestId('adjust-time-add-1h');
+    fireEvent.press(add1hBtn);
+    expect(hourInput.props.value).toBe('15');
+
+    // Bấm -1 giờ -> 14:00
+    const sub1hBtn = screen.getByTestId('adjust-time-sub-1h');
+    fireEvent.press(sub1hBtn);
+    expect(hourInput.props.value).toBe('14');
+  });
+
+  it('cho phép chọn ngày nộp nhanh bằng chip ngày', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ModalEditorScreen />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('quick-day-tomorrow')).toBeTruthy();
+    });
+
+    const tomorrowChip = screen.getByTestId('quick-day-tomorrow');
+    fireEvent.press(tomorrowChip);
+
+    const dateInput = screen.getByTestId('custom-deadline-date-input');
+    expect(dateInput.props.value).toBeTruthy();
+  });
 });

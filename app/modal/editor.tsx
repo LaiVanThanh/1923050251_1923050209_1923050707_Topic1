@@ -96,6 +96,34 @@ const DEADLINE_PRESETS: DeadlinePreset[] = [
   },
 ];
 
+interface QuickHour {
+  label: string;
+  hour: number;
+  minute: number;
+}
+
+const QUICK_HOURS: QuickHour[] = [
+  { label: '08:00', hour: 8, minute: 0 },
+  { label: '11:30', hour: 11, minute: 30 },
+  { label: '14:00', hour: 14, minute: 0 },
+  { label: '17:00', hour: 17, minute: 0 },
+  { label: '20:00', hour: 20, minute: 0 },
+  { label: '23:59', hour: 23, minute: 59 },
+];
+
+interface QuickDay {
+  key: string;
+  label: string;
+  offsetDays: number;
+}
+
+const QUICK_DAYS: QuickDay[] = [
+  { key: 'today', label: 'Hôm nay', offsetDays: 0 },
+  { key: 'tomorrow', label: 'Ngày mai', offsetDays: 1 },
+  { key: 'in3days', label: 'Sau 3 ngày', offsetDays: 3 },
+  { key: 'in7days', label: 'Sau 7 ngày', offsetDays: 7 },
+];
+
 export default function ModalEditorScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -127,10 +155,151 @@ export default function ModalEditorScreen() {
   const [assignmentTitle, setAssignmentTitle] = useState<string>(
     existingAssignment?.title ?? ''
   );
-  const [dueAtIso, setDueAtIso] = useState<string>(
-    existingAssignment?.dueAt ?? DEADLINE_PRESETS[0].getIso()
+  const initialDueIso = existingAssignment?.dueAt ?? DEADLINE_PRESETS[0].getIso();
+  const [dueAtIso, setDueAtIso] = useState<string>(initialDueIso);
+
+  const initialDate = new Date(initialDueIso);
+  const validInitialDate = !Number.isNaN(initialDate.getTime()) ? initialDate : new Date();
+
+  const [customHour, setCustomHour] = useState<string>(
+    String(validInitialDate.getHours()).padStart(2, '0')
+  );
+  const [customMinute, setCustomMinute] = useState<string>(
+    String(validInitialDate.getMinutes()).padStart(2, '0')
+  );
+  const [customDate, setCustomDate] = useState<string>(
+    `${String(validInitialDate.getDate()).padStart(2, '0')}/${String(
+      validInitialDate.getMonth() + 1
+    ).padStart(2, '0')}/${validInitialDate.getFullYear()}`
   );
   const [notes, setNotes] = useState<string>(existingAssignment?.notes ?? '');
+
+  const syncCustomInputs = (iso: string) => {
+    const d = new Date(iso);
+    if (!Number.isNaN(d.getTime())) {
+      setCustomHour(String(d.getHours()).padStart(2, '0'));
+      setCustomMinute(String(d.getMinutes()).padStart(2, '0'));
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      setCustomDate(`${dd}/${mm}/${yyyy}`);
+    }
+  };
+
+  const applyCustomTime = (hour: number, minute: number) => {
+    const cur = new Date(dueAtIso);
+    const valid = !Number.isNaN(cur.getTime()) ? cur : new Date();
+    const clampedH = Math.max(0, Math.min(23, hour));
+    const clampedM = Math.max(0, Math.min(59, minute));
+    const next = new Date(
+      valid.getFullYear(),
+      valid.getMonth(),
+      valid.getDate(),
+      clampedH,
+      clampedM,
+      0,
+      0
+    );
+    const iso = next.toISOString();
+    setDueAtIso(iso);
+    syncCustomInputs(iso);
+  };
+
+  const adjustTime = (deltaHours: number, deltaMinutes: number) => {
+    const cur = new Date(dueAtIso);
+    const valid = !Number.isNaN(cur.getTime()) ? cur : new Date();
+    const next = new Date(
+      valid.getTime() + deltaHours * 3600 * 1000 + deltaMinutes * 60 * 1000
+    );
+    const iso = next.toISOString();
+    setDueAtIso(iso);
+    syncCustomInputs(iso);
+  };
+
+  const setDayOffset = (offsetDays: number) => {
+    const now = new Date();
+    const cur = new Date(dueAtIso);
+    const valid = !Number.isNaN(cur.getTime()) ? cur : new Date();
+    const next = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + offsetDays,
+      valid.getHours(),
+      valid.getMinutes(),
+      0,
+      0
+    );
+    const iso = next.toISOString();
+    setDueAtIso(iso);
+    syncCustomInputs(iso);
+  };
+
+  const handleHourChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
+    setCustomHour(cleaned);
+    const num = parseInt(cleaned, 10);
+    if (!Number.isNaN(num) && num >= 0 && num <= 23 && cleaned.length === 2) {
+      applyCustomTime(num, parseInt(customMinute, 10) || 0);
+    }
+  };
+
+  const handleHourBlur = () => {
+    const num = parseInt(customHour, 10);
+    if (!Number.isNaN(num) && num >= 0 && num <= 23) {
+      applyCustomTime(num, parseInt(customMinute, 10) || 0);
+      setCustomHour(String(num).padStart(2, '0'));
+    } else {
+      const cur = new Date(dueAtIso);
+      if (!Number.isNaN(cur.getTime())) {
+        setCustomHour(String(cur.getHours()).padStart(2, '0'));
+      }
+    }
+  };
+
+  const handleMinuteChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '').slice(0, 2);
+    setCustomMinute(cleaned);
+    const num = parseInt(cleaned, 10);
+    if (!Number.isNaN(num) && num >= 0 && num <= 59 && cleaned.length === 2) {
+      applyCustomTime(parseInt(customHour, 10) || 0, num);
+    }
+  };
+
+  const handleMinuteBlur = () => {
+    const num = parseInt(customMinute, 10);
+    if (!Number.isNaN(num) && num >= 0 && num <= 59) {
+      applyCustomTime(parseInt(customHour, 10) || 0, num);
+      setCustomMinute(String(num).padStart(2, '0'));
+    } else {
+      const cur = new Date(dueAtIso);
+      if (!Number.isNaN(cur.getTime())) {
+        setCustomMinute(String(cur.getMinutes()).padStart(2, '0'));
+      }
+    }
+  };
+
+  const handleDateChange = (text: string) => {
+    setCustomDate(text);
+    const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+      const d = parseInt(match[1], 10);
+      const m = parseInt(match[2], 10) - 1;
+      const y = parseInt(match[3], 10);
+      const testDate = new Date(y, m, d);
+      if (
+        testDate.getFullYear() === y &&
+        testDate.getMonth() === m &&
+        testDate.getDate() === d
+      ) {
+        const cur = new Date(dueAtIso);
+        const h = !Number.isNaN(cur.getTime()) ? cur.getHours() : 17;
+        const min = !Number.isNaN(cur.getTime()) ? cur.getMinutes() : 0;
+        const next = new Date(y, m, d, h, min, 0, 0);
+        const iso = next.toISOString();
+        setDueAtIso(iso);
+      }
+    }
+  };
 
   const existingCourse = courses.find((c) => c.id === params.courseId);
   const [courseCode, setCourseCode] = useState<string>(existingCourse?.code ?? '');
@@ -155,6 +324,7 @@ export default function ModalEditorScreen() {
       setSelectedCourseId(existingAssignment.courseId);
       setAssignmentTitle(existingAssignment.title);
       setDueAtIso(existingAssignment.dueAt);
+      syncCustomInputs(existingAssignment.dueAt);
       setNotes(existingAssignment.notes ?? '');
     }
   }, [existingAssignment]);
@@ -449,14 +619,27 @@ export default function ModalEditorScreen() {
               >
                 3. Thời hạn nộp: {formatLocalDateTime(dueAtIso)}
               </Text>
-              <View style={[styles.presetGrid, { marginBottom: spacing.md }]}>
+
+              <Text
+                style={[
+                  typography.captionSemibold,
+                  { color: colors.textSecondary, marginBottom: spacing.xs },
+                ]}
+              >
+                Gợi ý mốc nhanh
+              </Text>
+              <View style={[styles.presetGrid, { marginBottom: spacing.sm }]}>
                 {DEADLINE_PRESETS.map((preset) => (
                   <Pressable
                     key={preset.key}
                     testID={`deadline-preset-${preset.key}`}
                     accessibilityRole="button"
                     accessibilityLabel={`Chọn hạn nộp ${preset.label}`}
-                    onPress={() => setDueAtIso(preset.getIso())}
+                    onPress={() => {
+                      const iso = preset.getIso();
+                      setDueAtIso(iso);
+                      syncCustomInputs(iso);
+                    }}
                     style={[
                       styles.presetBtn,
                       {
@@ -470,6 +653,295 @@ export default function ModalEditorScreen() {
                   >
                     <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
                       {preset.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text
+                style={[
+                  typography.captionSemibold,
+                  { color: colors.textSecondary, marginBottom: spacing.xs },
+                ]}
+              >
+                Tùy chỉnh ngày và giờ nộp
+              </Text>
+              <View style={styles.timeCustomRow}>
+                <View style={styles.timeInputBlock}>
+                  <Text
+                    style={[
+                      typography.captionSemibold,
+                      { color: colors.textSecondary, marginBottom: 4 },
+                    ]}
+                  >
+                    Giờ
+                  </Text>
+                  <TextInput
+                    testID="custom-deadline-hour-input"
+                    accessibilityLabel="Nhập giờ nộp từ 00 đến 23"
+                    value={customHour}
+                    onChangeText={handleHourChange}
+                    onBlur={handleHourBlur}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    placeholder="HH"
+                    placeholderTextColor={colors.textTertiary}
+                    style={[
+                      typography.headline,
+                      styles.timeDigitInput,
+                      {
+                        backgroundColor: colors.backgroundSecondary,
+                        borderColor: colors.borderSubtle,
+                        borderRadius: radius.md,
+                        color: colors.textPrimary,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <Text
+                  style={[
+                    typography.title2,
+                    {
+                      color: colors.textSecondary,
+                      alignSelf: 'flex-end',
+                      marginBottom: spacing.sm,
+                    },
+                  ]}
+                >
+                  :
+                </Text>
+
+                <View style={styles.timeInputBlock}>
+                  <Text
+                    style={[
+                      typography.captionSemibold,
+                      { color: colors.textSecondary, marginBottom: 4 },
+                    ]}
+                  >
+                    Phút
+                  </Text>
+                  <TextInput
+                    testID="custom-deadline-minute-input"
+                    accessibilityLabel="Nhập phút nộp từ 00 đến 59"
+                    value={customMinute}
+                    onChangeText={handleMinuteChange}
+                    onBlur={handleMinuteBlur}
+                    keyboardType="number-pad"
+                    maxLength={2}
+                    placeholder="mm"
+                    placeholderTextColor={colors.textTertiary}
+                    style={[
+                      typography.headline,
+                      styles.timeDigitInput,
+                      {
+                        backgroundColor: colors.backgroundSecondary,
+                        borderColor: colors.borderSubtle,
+                        borderRadius: radius.md,
+                        color: colors.textPrimary,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <View style={[styles.timeInputBlock, { flex: 1, minWidth: 140 }]}>
+                  <Text
+                    style={[
+                      typography.captionSemibold,
+                      { color: colors.textSecondary, marginBottom: 4 },
+                    ]}
+                  >
+                    Ngày định dạng ngày tháng năm
+                  </Text>
+                  <TextInput
+                    testID="custom-deadline-date-input"
+                    accessibilityLabel="Nhập ngày nộp định dạng ngày tháng năm"
+                    value={customDate}
+                    onChangeText={handleDateChange}
+                    keyboardType="numbers-and-punctuation"
+                    maxLength={10}
+                    placeholder="DD/MM/YYYY"
+                    placeholderTextColor={colors.textTertiary}
+                    style={[
+                      typography.body,
+                      styles.dateInput,
+                      {
+                        backgroundColor: colors.backgroundSecondary,
+                        borderColor: colors.borderSubtle,
+                        borderRadius: radius.md,
+                        color: colors.textPrimary,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+
+              <Text
+                style={[
+                  typography.captionSemibold,
+                  { color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.xs },
+                ]}
+              >
+                Mốc giờ nhanh
+              </Text>
+              <View style={[styles.presetGrid, { marginBottom: spacing.xs }]}>
+                {QUICK_HOURS.map((qh) => {
+                  const isMatch =
+                    parseInt(customHour, 10) === qh.hour &&
+                    parseInt(customMinute, 10) === qh.minute;
+                  return (
+                    <Pressable
+                      key={`${qh.hour}-${qh.minute}`}
+                      testID={`quick-hour-${qh.label.replace(':', '')}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Đặt giờ nộp ${qh.label}`}
+                      onPress={() => applyCustomTime(qh.hour, qh.minute)}
+                      style={[
+                        styles.presetBtn,
+                        {
+                          minHeight: MIN_TOUCH_TARGET,
+                          backgroundColor: isMatch
+                            ? colors.primarySoft
+                            : colors.backgroundSecondary,
+                          borderColor: isMatch ? colors.primary : colors.borderSubtle,
+                          borderRadius: radius.pill,
+                          paddingHorizontal: spacing.md,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          typography.footnoteSemibold,
+                          { color: isMatch ? colors.primary : colors.textPrimary },
+                        ]}
+                      >
+                        {qh.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text
+                style={[
+                  typography.captionSemibold,
+                  { color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.xs },
+                ]}
+              >
+                Điều chỉnh giờ
+              </Text>
+              <View style={[styles.presetGrid, { marginBottom: spacing.xs }]}>
+                <Pressable
+                  testID="adjust-time-sub-1h"
+                  accessibilityRole="button"
+                  accessibilityLabel="Lùi 1 giờ"
+                  onPress={() => adjustTime(-1, 0)}
+                  style={[
+                    styles.presetBtn,
+                    styles.adjustBtn,
+                    {
+                      minHeight: MIN_TOUCH_TARGET,
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.borderSubtle,
+                      borderRadius: radius.pill,
+                    },
+                  ]}
+                >
+                  <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
+                    -1 giờ
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID="adjust-time-add-1h"
+                  accessibilityRole="button"
+                  accessibilityLabel="Tăng 1 giờ"
+                  onPress={() => adjustTime(1, 0)}
+                  style={[
+                    styles.presetBtn,
+                    styles.adjustBtn,
+                    {
+                      minHeight: MIN_TOUCH_TARGET,
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.borderSubtle,
+                      borderRadius: radius.pill,
+                    },
+                  ]}
+                >
+                  <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
+                    +1 giờ
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID="adjust-time-sub-15m"
+                  accessibilityRole="button"
+                  accessibilityLabel="Lùi 15 phút"
+                  onPress={() => adjustTime(0, -15)}
+                  style={[
+                    styles.presetBtn,
+                    styles.adjustBtn,
+                    {
+                      minHeight: MIN_TOUCH_TARGET,
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.borderSubtle,
+                      borderRadius: radius.pill,
+                    },
+                  ]}
+                >
+                  <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
+                    -15 phút
+                  </Text>
+                </Pressable>
+                <Pressable
+                  testID="adjust-time-add-15m"
+                  accessibilityRole="button"
+                  accessibilityLabel="Tăng 15 phút"
+                  onPress={() => adjustTime(0, 15)}
+                  style={[
+                    styles.presetBtn,
+                    styles.adjustBtn,
+                    {
+                      minHeight: MIN_TOUCH_TARGET,
+                      backgroundColor: colors.backgroundSecondary,
+                      borderColor: colors.borderSubtle,
+                      borderRadius: radius.pill,
+                    },
+                  ]}
+                >
+                  <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
+                    +15 phút
+                  </Text>
+                </Pressable>
+              </View>
+
+              <Text
+                style={[
+                  typography.captionSemibold,
+                  { color: colors.textSecondary, marginTop: spacing.xs, marginBottom: spacing.xs },
+                ]}
+              >
+                Chọn ngày nhanh
+              </Text>
+              <View style={[styles.presetGrid, { marginBottom: spacing.md }]}>
+                {QUICK_DAYS.map((qd) => (
+                  <Pressable
+                    key={qd.key}
+                    testID={`quick-day-${qd.key}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Đặt ngày ${qd.label}`}
+                    onPress={() => setDayOffset(qd.offsetDays)}
+                    style={[
+                      styles.presetBtn,
+                      {
+                        minHeight: MIN_TOUCH_TARGET,
+                        backgroundColor: colors.backgroundSecondary,
+                        borderColor: colors.borderSubtle,
+                        borderRadius: radius.pill,
+                        paddingHorizontal: spacing.md,
+                      },
+                    ]}
+                  >
+                    <Text style={[typography.footnoteSemibold, { color: colors.primary }]}>
+                      {qd.label}
                     </Text>
                   </Pressable>
                 ))}
@@ -682,5 +1154,29 @@ const styles = StyleSheet.create({
     minHeight: 110,
     borderWidth: 1,
     textAlignVertical: 'top',
+  },
+  timeCustomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  timeInputBlock: {
+    minWidth: 64,
+  },
+  timeDigitInput: {
+    height: 48,
+    borderWidth: 1,
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  dateInput: {
+    height: 48,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+  },
+  adjustBtn: {
+    paddingHorizontal: 14,
   },
 });
